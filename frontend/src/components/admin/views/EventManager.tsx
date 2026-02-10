@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar, Plus, RefreshCw, Leaf } from 'lucide-react';
 import { EventForm } from './EventForm';
-import { useEventManagement } from '../../hooks/useEventManagement';
+import { useEventManagement } from '../hooks/useEventManagement';
 import { EventList } from './events/EventList';
 import { EventRequestList } from './events/EventRequestList';
 import { EventFilters } from './events/EventFilters';
