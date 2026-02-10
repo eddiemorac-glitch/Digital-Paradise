@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>API Connectivity Test</title>
+    <style>
+        body { background: #1a1a1a; color: #fff; font-family: monospace; padding: 2rem; }
+        .status { padding: 10px; border-radius: 4px; margin-bottom: 20px; }
+        .success { background: #15803d; }
+        .error { background: #b91c1c; }
+        pre { background: #000; padding: 15px; border-radius: 8px; overflow: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔎 API Connectivity Diagnostic</h1>
+    <div id="status" class="status" style="background: #eab308; color: #000;">Testing connection...</div>
+    
+    <h3>Configuration</h3>
+    <pre id="config"></pre>
+
+    <h3>Raw Response</h3>
+    <pre id="response"></pre>
+
+    <script>
+        const API_URL = 'http://localhost:3003/events';
+        
+        document.getElementById('config').textContent = JSON.stringify({
+            target: API_URL,
+            browser: navigator.userAgent
+        }, null, 2);
+
+        async function runTest() {
+            const statusDiv = document.getElementById('status');
+            const responsePre = document.getElementById('response');
+
+            try {
+                console.log('Fetching:', API_URL);
+                const start = performance.now();
+                const res = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                const ms = performance.now() - start;
+
+                if (!res.ok) {
+                    throw new Error(`HTTP Error: ${res.status} ${res.statusText}`);
+                }
+
+                const data = await res.json();
+                
+                statusDiv.textContent = `✅ SUCCESS (${ms.toFixed(0)}ms) - Found ${Array.isArray(data) ? data.length : 'Unknown'} events`;
+                statusDiv.className = 'status success';
+                responsePre.textContent = JSON.stringify(data, null, 2);
+                
+            } catch (err) {
+                console.error(err);
+                statusDiv.textContent = `❌ FAILED: ${err.message}`;
+                statusDiv.className = 'status error';
+                responsePre.textContent = err.stack || err.toString();
+            }
+        }
+
+        runTest();
+    </script>
+</body>
+</html>

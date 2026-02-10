@@ -1,0 +1,50 @@
+### Merchant Admin Verification API Tests
+### Requires JWT token for admin user
+
+@host = http://localhost:3000
+@token = YOUR_ADMIN_JWT_TOKEN
+
+### Get all merchants pending approval
+# @name getPendingMerchants
+GET {{host}}/merchants/admin/pending
+Authorization: Bearer {{token}}
+
+###
+
+### Approve a merchant
+# @name approveMerchant
+POST {{host}}/merchants/admin/{{merchantId}}/approve
+Authorization: Bearer {{token}}
+
+###
+
+### Reject a merchant with reason
+# @name rejectMerchant
+POST {{host}}/merchants/admin/{{merchantId}}/reject
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "rejectionReason": "Documentación incompleta. Por favor suba su patente comercial."
+}
+
+###
+
+### Suspend an active merchant
+# @name suspendMerchant
+POST {{host}}/merchants/admin/{{merchantId}}/suspend
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "suspensionReason": "Quejas de clientes pendientes de revisión."
+}
+
+###
+
+### Reactivate a suspended merchant
+# @name reactivateMerchant
+POST {{host}}/merchants/admin/{{merchantId}}/reactivate
+Authorization: Bearer {{token}}
+
+###

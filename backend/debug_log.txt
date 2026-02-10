@@ -1,0 +1,3270 @@
+
+[2026-01-31T02:00:00.465Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: undefined
+AdminJS.adapters: undefined
+
+[2026-01-31T02:00:00.487Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: undefined
+AdminJS.adapters: undefined
+
+[2026-01-31T02:00:00.565Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: undefined
+AdminJS.adapters: undefined
+
+[2026-01-31T02:00:41.151Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:00:41.160Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:00:41.298Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:01:18.613Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:01:18.629Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:01:18.704Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:05:54.935Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:05:54.944Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:05:54.996Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:06:22.718Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:06:22.785Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 
+
+[2026-01-31T02:06:22.911Z] START DEBUG 
+Database is: function class Database extends adminjs_1.BaseDatabase {
+    constructor(dataSource) {
+        super(dataSource);
+        this.dataSource = dataSource;
+    }
+    resources() {
+        const resources = [];
+        // eslint-disable-next-line no-restricted-syntax
+        for (const entityMetadata of this.dataSource.entityMetadatas) {
+            resources.push(new Resource_1.Resource(entityMetadata.target));
+        }
+        return resources;
+    }
+    static isAdapterFor(dataSource) {
+        return !!dataSource.entityMetadatas;
+    }
+}
+Resource is: function class Resource extends adminjs_1.BaseResource {
+    constructor(model) {
+        super(model);
+        this.propsObject = {};
+        this.model = model;
+        this.propsObject = this.prepareProps();
+    }
+    databaseName() {
+        return this.model.getRepository().metadata.connection.options.database || 'typeorm';
+    }
+    databaseType() {
+        return this.model.getRepository().metadata.connection.options.type || 'typeorm';
+    }
+    name() {
+        return this.model.name;
+    }
+    id() {
+        return this.model.name;
+    }
+    idName() {
+        return this.model.getRepository().metadata.primaryColumns[0].propertyName;
+    }
+    properties() {
+        return [...Object.values(this.propsObject)];
+    }
+    property(path) {
+        return this.propsObject[path];
+    }
+    count(filter) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return this.model.count(({
+                where: (0, filter_converter_1.convertFilter)(filter),
+            }));
+        });
+    }
+    find(filter, 
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const { limit = 10, offset = 0, sort = {} } = params;
+            const { direction, sortBy } = sort;
+            const instances = yield this.model.find({
+                where: (0, filter_converter_1.convertFilter)(filter),
+                take: limit,
+                skip: offset,
+                order: {
+                    [sortBy]: (direction || 'asc').toUpperCase(),
+                },
+            });
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    findOne(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = id;
+            const instance = yield this.model.findOneBy(reference);
+            if (!instance) {
+                return null;
+            }
+            return new adminjs_1.BaseRecord(instance, this);
+        });
+    }
+    findMany(ids) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = (0, typeorm_1.In)(ids);
+            const instances = yield this.model.findBy(reference);
+            return instances.map((instance) => new adminjs_1.BaseRecord(instance, this));
+        });
+    }
+    create(params) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const instance = this.model.create(adminjs_1.flat.unflatten(this.prepareParams(params)));
+            yield this.validateAndSave(instance);
+            return instance;
+        });
+    }
+    update(pk, params = {}) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            const instance = yield this.model.findOneBy(reference);
+            if (instance) {
+                const preparedParams = adminjs_1.flat.unflatten(this.prepareParams(params));
+                Object.keys(preparedParams).forEach((paramName) => {
+                    instance[paramName] = preparedParams[paramName];
+                });
+                yield this.validateAndSave(instance);
+                return instance;
+            }
+            throw new Error('Instance not found.');
+        });
+    }
+    delete(pk) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const reference = {};
+            reference[this.idName()] = pk;
+            try {
+                const instance = yield this.model.findOneBy(reference);
+                if (instance) {
+                    yield instance.remove();
+                }
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({}, {
+                        type: 'QueryFailedError',
+                        message: error.message,
+                    });
+                }
+                throw error;
+            }
+        });
+    }
+    prepareProps() {
+        const { columns } = this.model.getRepository().metadata;
+        return columns.reduce((memo, col, index) => {
+            const property = new Property_1.Property(col, index);
+            return Object.assign(Object.assign({}, memo), { [property.path()]: property });
+        }, {});
+    }
+    /** Converts params from string to final type */
+    prepareParams(params) {
+        const preparedParams = Object.assign({}, params);
+        this.properties().forEach((property) => {
+            const param = adminjs_1.flat.get(preparedParams, property.path());
+            const key = property.path();
+            // eslint-disable-next-line no-continue
+            if (param === undefined) {
+                return;
+            }
+            const type = property.type();
+            if (type === 'mixed') {
+                preparedParams[key] = param;
+            }
+            if (type === 'number') {
+                if (property.isArray()) {
+                    preparedParams[key] = param ? param.map((p) => (0, safe_parse_number_1.default)(p)) : param;
+                }
+                else {
+                    preparedParams[key] = (0, safe_parse_number_1.default)(param);
+                }
+            }
+            if (type === 'reference') {
+                if (param === null) {
+                    preparedParams[property.column.propertyName] = null;
+                }
+                else {
+                    const [ref, foreignKey] = property.column.propertyPath.split('.');
+                    const id = (property.column.type === Number) ? Number(param) : param;
+                    preparedParams[ref] = foreignKey ? {
+                        [foreignKey]: id,
+                    } : id;
+                }
+            }
+        });
+        return preparedParams;
+    }
+    // eslint-disable-next-line class-methods-use-this
+    validateAndSave(instance) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (Resource.validate) {
+                const errors = yield Resource.validate(instance);
+                if (errors && errors.length) {
+                    const validationErrors = errors.reduce((memo, error) => (Object.assign(Object.assign({}, memo), { [error.property]: {
+                            type: Object.keys(error.constraints)[0],
+                            message: Object.values(error.constraints)[0],
+                        } })), {});
+                    throw new adminjs_1.ValidationError(validationErrors);
+                }
+            }
+            try {
+                yield instance.save();
+            }
+            catch (error) {
+                if (error.name === 'QueryFailedError') {
+                    throw new adminjs_1.ValidationError({
+                        [error.column]: {
+                            type: 'QueryFailedError',
+                            message: error.message,
+                        },
+                    });
+                }
+            }
+        });
+    }
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    static isAdapterFor(rawResource) {
+        try {
+            return !!rawResource.getRepository().metadata;
+        }
+        catch (e) {
+            return false;
+        }
+    }
+}
+AdminJS.adapters length: 0
+AdminJS.adapters: 

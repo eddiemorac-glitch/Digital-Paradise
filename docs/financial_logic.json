@@ -1,0 +1,50 @@
+{
+    "project": "Caribe Digital CR",
+    "version": "1.1.0",
+    "region": "Costa Rica - Caribe",
+    "currency": {
+        "code": "CRC",
+        "symbol": "₡",
+        "precision": 2,
+        "rounding_rule": "ROUND_HALF_UP"
+    },
+    "taxes": {
+        "iva": 0.13
+    },
+    "platform_settings": {
+        "franchise_commission_percent": 0.05,
+        "description": "5% commission to maximize attractiveness for merchants and couriers"
+    },
+    "delivery": {
+        "base_rate": 1200.00,
+        "rate_per_km": 350.00,
+        "platform_fee_percent": 0.05,
+        "rules": {
+            "min_delivery_fee": 1000.00,
+            "max_delivery_fee": 5000.00
+        }
+    },
+    "advertising": {
+        "tiers": {
+            "bronze": {
+                "fixed_fee": 10000.00,
+                "description": "Banner rotativo en eventos (50% OFF)"
+            },
+            "silver": {
+                "fixed_fee": 32500.00,
+                "description": "Mención en redes + banner destacado (50% OFF)"
+            },
+            "gold": {
+                "fixed_fee": 75000.00,
+                "description": "Exclusividad y branding principal (50% OFF)"
+            }
+        },
+        "sales_commission_percent": 0.05
+    },
+    "platform_integrity_rules": {
+        "disallow_negative_totals": true,
+        "transaction_fee_flat": 250.00,
+        "transaction_fee_percent": 0.05,
+        "rounding_strategy": "financial_integrity_v1"
+    }
+}

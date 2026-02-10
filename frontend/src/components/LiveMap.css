@@ -1,0 +1,1397 @@
+/* ============================================
+   LiveMap.css - Extracted Map Component Styles
+   ============================================ */
+
+/* Rain Effect Animation */
+.rain-effect {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-image: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%);
+    background-size: 1px 60px;
+    animation: rain-fall 1s linear infinite;
+}
+
+@keyframes rain-fall {
+    from {
+        transform: translateY(-100%) rotate(10deg);
+        will-change: transform;
+    }
+
+    to {
+        transform: translateY(100%) rotate(10deg);
+    }
+}
+
+/* Vertical Marquee */
+@keyframes marquee-vertical {
+    from {
+        transform: translateY(0);
+    }
+
+    to {
+        transform: translateY(-50%);
+    }
+}
+
+.animate-marquee-vertical {
+    animation: marquee-vertical 5s linear infinite;
+}
+
+/* Marker Animations */
+.marker-pulse {
+    animation: m-pulse 2s infinite;
+}
+
+.marker-bounce {
+    animation: m-bounce 2s infinite ease-in-out;
+}
+
+@keyframes m-bounce {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes m-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 236, 255, 0.4);
+    }
+
+    70% {
+        transform: scale(1.2);
+        box-shadow: 0 0 0 10px rgba(0, 236, 255, 0);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(0, 236, 255, 0);
+    }
+}
+
+@keyframes aura-pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+.pulse-aura {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+@keyframes m-glow {
+    from {
+        transform: scale(0.9);
+        opacity: 0.8;
+    }
+
+    to {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+}
+
+/* Event Marker Wrapper */
+.event-marker-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    will-change: transform, opacity;
+    contain: layout style paint;
+    z-index: 600;
+}
+
+.marker-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.floater {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Event Billboard - Omni-Position System */
+.event-billboard.omni-pos {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    pointer-events: none;
+    filter: drop-shadow(0 0 20px var(--color));
+    will-change: transform;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Glass Banner - Surgerical Upgrade */
+.glass-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 12, 24, 0.9);
+    backdrop-filter: blur(20px) saturate(1.8);
+    border: 1.5px solid var(--color);
+    padding: 10px 20px;
+    border-radius: 4px;
+    /* Sharper, more technical corners */
+    box-shadow:
+        0 0 15px rgba(0, 0, 0, 0.5),
+        0 0 30px var(--color),
+        inset 0 0 20px var(--color);
+    animation: b-neon-stable 12s infinite, b-float 4s infinite ease-in-out;
+    white-space: nowrap;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform, filter;
+    overflow: hidden;
+    /* For scanner line */
+}
+
+/* Digital Scanner Line */
+.scanner-line {
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(to right,
+            transparent,
+            var(--color),
+            transparent);
+    opacity: 0.3;
+    transform: skewX(-20deg);
+    animation: scan 3s infinite linear;
+    pointer-events: none;
+}
+
+@keyframes scan {
+    0% {
+        left: -100%;
+    }
+
+    50% {
+        left: 150%;
+    }
+
+    100% {
+        left: 150%;
+    }
+}
+
+/* HUD Corners */
+.corner-tl,
+.corner-br {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 2px solid var(--color);
+    pointer-events: none;
+}
+
+.corner-tl {
+    top: -1px;
+    left: -1px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.corner-br {
+    bottom: -1px;
+    right: -1px;
+    border-top: none;
+    border-left: none;
+}
+
+.is-hero .glass-banner {
+    scale: 1.1;
+    background: rgba(var(--color-rgb), 0.2);
+    border-width: 2.5px;
+    box-shadow:
+        0 0 50px var(--color),
+        inset 0 0 30px var(--color);
+}
+
+/* Mobile Optimization: Reduce heavy effects */
+@media (max-width: 768px) {
+    .glass-banner {
+        box-shadow: 0 0 10px var(--color);
+        backdrop-filter: blur(8px);
+        animation: none;
+    }
+
+    .p-aura {
+        display: none;
+    }
+}
+
+/* Tactical Ping State (minimized) */
+.tac-ping .glass-banner {
+    padding: 4px 10px;
+    border-width: 1px;
+    box-shadow: 0 0 15px var(--color);
+    opacity: 0.4;
+    transform-origin: center;
+}
+
+.tac-ping .text-label {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+}
+
+.tac-ping .billboard-art {
+    width: 20px;
+    height: 20px;
+}
+
+/* Tier Rank Indicator (Segments) */
+.tier-rank-indicator {
+    position: absolute;
+    left: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    z-index: 5;
+}
+
+.rank-segment {
+    width: 4px;
+    height: 12px;
+    background: var(--color);
+    border-radius: 1px;
+    box-shadow: 0 0 5px var(--color);
+    opacity: 0.6;
+}
+
+.tier-gold .rank-segment {
+    background: #ffaa00;
+    box-shadow: 0 0 8px #ffaa00;
+    opacity: 1;
+}
+
+.tier-silver .rank-segment {
+    background: #00ecff;
+    box-shadow: 0 0 5px #00ecff;
+    opacity: 0.8;
+}
+
+.tier-bronze .rank-segment {
+    background: #fff;
+    opacity: 0.5;
+}
+
+/* Segment Animations */
+.tier-gold .segment-1 {
+    animation: rank-pulse 2s infinite ease-in-out;
+}
+
+.tier-gold .segment-2 {
+    animation: rank-pulse 2s infinite ease-in-out 0.2s;
+}
+
+.tier-gold .segment-3 {
+    animation: rank-pulse 2s infinite ease-in-out 0.4s;
+}
+
+@keyframes rank-pulse {
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scaleX(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scaleX(1.5);
+    }
+}
+
+
+/* Tiered Sponsorship Styles */
+.tier-silver .glass-banner {
+    border-color: #00ecff !important;
+    box-shadow: 0 0 25px rgba(0, 236, 255, 0.4), inset 0 0 10px rgba(0, 236, 255, 0.2);
+}
+
+.tier-bronze .glass-banner {
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
+.tier-gold .p-aura {
+    scale: 2;
+    opacity: 0.6;
+    background: radial-gradient(circle, #ffaa00 0%, transparent 80%);
+}
+
+.tier-gold .p-dot {
+    background: #ffaa00;
+    box-shadow: 0 0 20px #ffaa00, 0 0 40px #ffaa00;
+}
+
+.tier-gold .glass-banner {
+    border-color: #ffaa00 !important;
+    box-shadow: 0 0 40px #ffaa00, inset 0 0 15px #ffaa00;
+}
+
+.gold-halo {
+    position: absolute;
+    inset: -15px;
+    border-radius: 12px;
+    background: linear-gradient(45deg, transparent, rgba(255, 170, 0, 0.4), transparent);
+    background-size: 200% 200%;
+    animation: gold-shimmer 3s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(10px);
+}
+
+@keyframes gold-shimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 200% 50%;
+    }
+}
+
+.premium-tag {
+    font-size: 7px;
+    color: #ffaa00;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-top: 2px;
+    opacity: 0.9;
+}
+
+/* Hero Focus State (expanded) */
+.hero-focus .glass-banner {
+    padding: 10px 24px;
+    border-width: 3px;
+    box-shadow: 0 0 40px var(--color), inset 0 0 20px var(--color);
+    opacity: 1;
+    z-index: 10000;
+}
+
+.tier-gold.hero-focus .glass-banner {
+    box-shadow: 0 0 60px #ffaa00, inset 0 0 30px #ffaa00;
+}
+
+/* Billboard Art */
+.billboard-art {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+}
+
+.billboard-art svg {
+    width: 100%;
+    height: 100%;
+    animation: b-draw 3s forwards, b-glow-pulse 2s infinite alternate;
+}
+
+/* Billboard Text */
+.billboard-text {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 120px;
+}
+
+.secondary-info {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.category-tag {
+    font-size: 8px;
+    font-weight: 800;
+    color: var(--color);
+    background: rgba(var(--color-rgb), 0.1);
+    padding: 1px 4px;
+    border-radius: 2px;
+    border: 1px solid rgba(var(--color-rgb), 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.date-tag {
+    font-size: 8px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    letter-spacing: 0.5px;
+}
+
+.text-label {
+    color: white;
+    font-size: 13px;
+    font-weight: 950;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--color), 0 0 2px white;
+}
+
+/* Billboard Beam (connector line) */
+.billboard-beam {
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(to bottom, transparent, var(--color));
+    box-shadow: 0 0 15px var(--color);
+    transform-origin: top center;
+    opacity: 0.5;
+    z-index: -1;
+}
+
+/* Event Pulse Core (the dot at the actual location) */
+.event-pulse-core {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.p-aura {
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--color) 0%, transparent 70%);
+    opacity: 0.3;
+    animation: aura-pulse 3s infinite alternate;
+}
+
+.p-ring {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--color);
+    border-radius: 50%;
+    animation: aura-spin 5s linear infinite;
+}
+
+.p-dot {
+    width: 8px;
+    height: 8px;
+    background: white;
+    border-radius: 50%;
+    box-shadow: 0 0 15px var(--color), 0 0 30px var(--color);
+    z-index: 5;
+}
+
+/* Active Path Glow */
+.path-active-glow {
+    filter: drop-shadow(0 0 8px #00ecff);
+    stroke-linecap: round;
+    animation: flow-pulse 2s infinite alternate;
+}
+
+@keyframes flow-pulse {
+    from {
+        opacity: 0.6;
+        stroke-width: 3;
+    }
+
+    to {
+        opacity: 1;
+        stroke-width: 4;
+    }
+}
+
+/* Keyframe Animations */
+@keyframes aura-pulse {
+    from {
+        transform: scale(0.8);
+        opacity: 0.2;
+    }
+
+    to {
+        transform: scale(1.5);
+        opacity: 0.5;
+    }
+}
+
+@keyframes aura-spin {
+    from {
+        transform: rotate(0deg) scale(1);
+    }
+
+    to {
+        transform: rotate(360deg) scale(1.1);
+    }
+}
+
+@keyframes b-draw {
+    to {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes b-glow-pulse {
+    from {
+        filter: drop-shadow(0 0 5px currentColor);
+        opacity: 0.8;
+    }
+
+    to {
+        filter: drop-shadow(0 0 15px currentColor);
+        opacity: 1;
+    }
+}
+
+@keyframes b-float {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-5px) rotate(0.5deg);
+    }
+
+    66% {
+        transform: translateY(-2px) rotate(-0.5deg);
+    }
+}
+
+@keyframes b-neon-stable {
+
+    0%,
+    100% {
+        filter: brightness(1) saturate(1);
+        box-shadow: 0 0 30px var(--color), inset 0 0 15px var(--color);
+    }
+
+    50% {
+        filter: brightness(1.2) saturate(1.1);
+        box-shadow: 0 0 45px var(--color), inset 0 0 20px var(--color);
+    }
+}
+
+/* Merchant Markers */
+.merchant-marker-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.merchant-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.merchant-avatar {
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 0 10px currentColor);
+}
+
+.merchant-avatar svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Cluster & Event Styles (P3) */
+.cluster-marker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cluster-core {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 236, 255, 0.3);
+    border: 2px solid #00ecff;
+    box-shadow: 0 0 20px rgba(0, 236, 255, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    font-family: 'Inter', sans-serif;
+    text-shadow: 0 0 10px #00ecff;
+    backdrop-filter: blur(8px);
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.cluster-marker:hover .cluster-core {
+    background: rgba(0, 236, 255, 0.5);
+    transform: scale(1.1);
+    box-shadow: 0 0 30px rgba(0, 236, 255, 0.6);
+}
+
+.cluster-ring {
+    position: absolute;
+    inset: -6px;
+    border: 1px solid rgba(0, 236, 255, 0.3);
+    border-top-color: #00ecff;
+    border-radius: 50%;
+    animation: spin 4s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes p-pulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.5);
+        opacity: 0.2;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+}
+
+.event-pulse-core {
+    animation: p-pulse var(--pulse-duration) infinite ease-in-out;
+}
+
+/* ============================================
+   ATMOSPHERIC OVERLAYS - Time of Day System
+   ============================================ */
+
+/* Sunrise - Golden warm tones */
+.atmosphere-sunrise {
+    background: linear-gradient(180deg,
+            rgba(255, 180, 100, 0.08) 0%,
+            rgba(255, 120, 50, 0.04) 30%,
+            transparent 60%);
+    mix-blend-mode: overlay;
+}
+
+.atmosphere-sunrise::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, rgba(255, 200, 100, 0.15) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+/* Day - Bright and saturated */
+.atmosphere-day {
+    background: linear-gradient(180deg,
+            rgba(135, 206, 235, 0.05) 0%,
+            transparent 40%);
+}
+
+/* Golden Hour - Magic hour vibes */
+.atmosphere-golden {
+    background: linear-gradient(180deg,
+            rgba(255, 140, 50, 0.1) 0%,
+            rgba(255, 80, 100, 0.05) 50%,
+            rgba(100, 50, 150, 0.03) 100%);
+}
+
+.atmosphere-golden::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 120% 80% at 80% 20%,
+            rgba(255, 180, 80, 0.2) 0%,
+            transparent 50%);
+    pointer-events: none;
+    animation: golden-pulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes golden-pulse {
+    from {
+        opacity: 0.6;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Night - Neon intensified */
+.atmosphere-night {
+    background: linear-gradient(180deg,
+            rgba(10, 5, 30, 0.3) 0%,
+            rgba(0, 10, 20, 0.2) 100%);
+}
+
+.atmosphere-night .glass-banner {
+    box-shadow:
+        0 0 40px var(--color),
+        0 0 80px var(--color),
+        inset 0 0 20px var(--color);
+}
+
+.atmosphere-night .p-dot {
+    box-shadow:
+        0 0 20px var(--color),
+        0 0 40px var(--color),
+        0 0 60px var(--color);
+}
+
+/* Stealth - Low contrast, minimal */
+.atmosphere-stealth {
+    background: rgba(0, 10, 20, 0.4);
+    filter: contrast(0.9) brightness(0.8);
+}
+
+.atmosphere-stealth .glass-banner {
+    opacity: 0.6;
+    border-width: 1px;
+}
+
+.atmosphere-stealth .text-label {
+    opacity: 0.7;
+}
+
+/* ============================================
+   TIME INDICATOR BADGE
+   ============================================ */
+
+.time-indicator {
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem;
+    background: rgba(0, 10, 20, 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 2rem;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.6);
+    pointer-events: none;
+    animation: fade-in 0.5s ease-out;
+}
+
+.time-indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    animation: time-dot-pulse 2s infinite;
+}
+
+@keyframes time-dot-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* ============================================
+   URGENT EVENT INDICATOR
+   ============================================ */
+
+.event-marker-wrap.is-urgent .event-pulse-core::before {
+    content: '';
+    position: absolute;
+    inset: -8px;
+    border: 2px solid #ff4444;
+    border-radius: 50%;
+    animation: urgent-ring 1s ease-out infinite;
+}
+
+.event-marker-wrap.is-urgent .event-pulse-core::after {
+    content: '!';
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    background: #ff4444;
+    border-radius: 50%;
+    font-size: 10px;
+    font-weight: 900;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: urgent-bounce 0.5s ease-in-out infinite alternate;
+}
+
+@keyframes urgent-ring {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    to {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes urgent-bounce {
+    from {
+        transform: translateX(-50%) translateY(0);
+    }
+
+    to {
+        transform: translateX(-50%) translateY(-3px);
+    }
+}
+
+/* ============================================
+   HOT ZONE INDICATOR
+   ============================================ */
+
+.hot-zone-marker {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hot-zone-ring {
+    position: absolute;
+    inset: 0;
+    border: 2px dashed rgba(255, 100, 50, 0.5);
+    border-radius: 50%;
+    animation: hot-zone-spin 10s linear infinite;
+}
+
+.hot-zone-ring::before {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border: 1px solid rgba(255, 100, 50, 0.2);
+    border-radius: 50%;
+}
+
+.hot-zone-label {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 2px 8px;
+    background: rgba(255, 100, 50, 0.9);
+    border-radius: 4px;
+    font-size: 8px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: white;
+    white-space: nowrap;
+}
+
+@keyframes hot-zone-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   IDLE MODE INDICATOR
+   ============================================ */
+
+.idle-indicator {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1002;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1.25rem;
+    background: rgba(0, 255, 102, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(0, 255, 102, 0.3);
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(0, 255, 102, 0.8);
+    animation: idle-fade 3s ease-in-out infinite alternate;
+}
+
+@keyframes idle-fade {
+    from {
+        opacity: 0.6;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Cluster Count Dot */
+.cluster-count-dot {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ffaa00;
+    color: white;
+    font-size: 10px;
+    font-weight: 900;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+.is-cluster .p-ring {
+    border-width: 2px;
+    border-style: dashed;
+}
+
+/* ============================================
+   PHASE 22 & 23: PREMIUM 3D EVENTS & OPTIMIZATIONS
+   ============================================ */
+
+.event-marker-system {
+    overflow: visible !important;
+    pointer-events: auto;
+}
+
+.event-scene {
+    position: relative;
+    width: 0;
+    height: 0;
+    perspective: 1000px;
+    transform-style: preserve-3d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    /* Re-enable for the actual marker */
+}
+
+/* 3D Billboard Wrap */
+.billboard-3d-wrap {
+    position: absolute;
+    bottom: 20px;
+    /* Floating height */
+    left: 50%;
+    transform: translateX(-50%) rotateX(-15deg);
+    transform-style: preserve-3d;
+    will-change: transform;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 2;
+}
+
+.tier-gold .billboard-3d-wrap {
+    bottom: 30px;
+}
+
+.is-hero .billboard-3d-wrap {
+    transform: translateX(-50%) rotateX(0deg) scale(1.1);
+    bottom: 40px;
+}
+
+/* Tactical Light Beam */
+.tactical-beam {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    height: 30px;
+    background: linear-gradient(to top, var(--color), transparent);
+}
+
+/* FIREFLY SWARM (Gold/VIP Only) */
+.firefly-swarm {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 2001;
+}
+
+.firefly-p {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    background: #FFD700;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #FFD700;
+    opacity: 0;
+}
+
+.firefly-p:nth-child(1) {
+    animation: fly1 4s infinite ease-in-out;
+}
+
+.firefly-p:nth-child(2) {
+    animation: fly2 5s infinite ease-in-out 1.2s;
+}
+
+.firefly-p:nth-child(3) {
+    animation: fly3 4.5s infinite ease-in-out 2.5s;
+}
+
+@keyframes fly1 {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 1;
+        transform: translate(20px, -30px) scale(1);
+    }
+
+    100% {
+        transform: translate(0, -100px) scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes fly2 {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+        transform: translate(-30px, -20px) scale(1);
+    }
+
+    100% {
+        transform: translate(-10px, -90px) scale(0);
+        opacity: 0;
+    }
+}
+
+@keyframes fly3 {
+    0% {
+        transform: translate(0, 0) scale(0);
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 1;
+        transform: translate(15px, -40px) scale(1);
+    }
+
+    100% {
+        transform: translate(5px, -110px) scale(0);
+        opacity: 0;
+    }
+}
+
+.tier-silver .tactical-beam {
+    width: 3px;
+    height: 35px;
+    opacity: 0.6;
+    box-shadow: 0 0 10px var(--color);
+}
+
+.tier-gold .tactical-beam {
+    width: 4px;
+    height: 40px;
+    opacity: 0.8;
+    box-shadow: 0 0 20px var(--color);
+}
+
+/* Ground Anchor Ring */
+.ground-anchor {
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--color);
+    border-radius: 50%;
+    transform: translateX(-50%) rotateX(75deg);
+    box-shadow: 0 0 10px var(--color);
+    background: rgba(0, 255, 102, 0.2);
+    animation: anchor-pulse 4s infinite ease-in-out;
+}
+
+.tier-gold .ground-anchor {
+    width: 20px;
+    height: 20px;
+    border-width: 3px;
+    box-shadow: 0 0 20px var(--color);
+}
+
+/* Hero Focus Ground Enhancement */
+.is-hero .ground-anchor {
+    width: 40px;
+    height: 40px;
+    border-color: #fff;
+    background: radial-gradient(circle, var(--color) 0%, transparent 70%);
+    opacity: 0.8;
+}
+
+.is-hero .ground-anchor::after {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    border: 1px dashed var(--color);
+    border-radius: 50%;
+    animation: anchor-pulse-hero 2s infinite alternate;
+}
+
+/* URGENT INDICATOR (Next 2 Hours) */
+.is-urgent .billboard-content {
+    border-color: #ffcc00 !important;
+    animation: urgent-border-pulse 1s infinite alternate;
+}
+
+.is-urgent .ground-anchor {
+    border-color: #ffcc00;
+    box-shadow: 0 0 25px #ffcc00;
+}
+
+.is-urgent .ground-anchor::before {
+    content: '';
+    position: absolute;
+    inset: -15px;
+    border: 2px solid #ffcc00;
+    border-radius: 50%;
+    animation: urgent-pulse 1.5s infinite ease-out;
+}
+
+@keyframes urgent-pulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(2);
+        opacity: 0;
+    }
+}
+
+@keyframes urgent-border-pulse {
+    from {
+        box-shadow: 0 0 10px rgba(255, 204, 0, 0.4);
+    }
+
+    to {
+        box-shadow: 0 0 30px rgba(255, 204, 0, 0.8);
+    }
+}
+
+.is-urgent .billboard-text::before {
+    content: '⚡ PRONTO';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ffcc00;
+    color: #000;
+    font-size: 8px;
+    font-weight: 900;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+
+
+@keyframes anchor-pulse-hero {
+    from {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    to {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* LOD Complexity Tiers */
+.lod-low .tactical-beam,
+.lod-low .ground-anchor {
+    display: none;
+}
+
+.lod-low .billboard-3d-wrap {
+    transform: translateX(-50%) rotateX(0deg);
+    bottom: 0;
+}
+
+/* Animations */
+@keyframes anchor-pulse {
+    0% {
+        transform: translateX(-50%) rotateX(75deg) scale(0.8);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translateX(-50%) rotateX(75deg) scale(1.2);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(-50%) rotateX(75deg) scale(0.8);
+        opacity: 0.5;
+    }
+}
+
+/* Holographic Extras */
+.billboard-content::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(255, 255, 255, 0.05) 50%,
+            transparent 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    opacity: 0.3;
+}
+
+.tier-gold .billboard-content {
+    border-color: #ffaa00 !important;
+    box-shadow: 0 0 30px rgba(255, 170, 0, 0.4), inset 0 0 15px rgba(255, 170, 0, 0.2);
+}
+
+/* ============================================
+   MOBILE RESPONSIVENESS
+   ============================================ */
+
+@media (max-width: 768px) {
+
+    /* Compact Time Indicator */
+    .time-indicator {
+        top: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.6rem;
+        letter-spacing: 0.1em;
+        background: rgba(0, 10, 20, 0.6);
+        backdrop-filter: blur(8px);
+    }
+
+    /* Hide Idle Indicator on Mobile to save space */
+    .idle-indicator {
+        display: none !important;
+    }
+
+    /* Disable Scanlines on Mobile for performance & visibility */
+    .scanlines {
+        display: none !important;
+    }
+
+    /* Reduce Rain Intensity */
+    .rain-effect {
+        opacity: 0.3;
+    }
+
+    /* Adjust Fog/Atmosphere */
+    .atmosphere-sunrise::after,
+    .atmosphere-golden::before {
+        opacity: 0.5;
+    }
+
+    /* Compact Hot Zone Markers */
+    .hot-zone-marker {
+        width: 60px;
+        height: 60px;
+    }
+
+    .hot-zone-label {
+        font-size: 6px;
+        bottom: -6px;
+    }
+
+    /* Hide 3D Tilt on Mobile for performance */
+    .billboard-3d-wrap {
+        transform: translateX(-50%) rotateX(0deg) !important;
+        bottom: 10px !important;
+    }
+
+    /* Hide heavy particle effects */
+    .firefly-swarm,
+    .ground-anchor {
+        display: none !important;
+    }
+}

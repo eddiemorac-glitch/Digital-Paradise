@@ -1,0 +1,67 @@
+### Phase 17: Courier & Logistics Ecosystem Verification
+
+@baseUrl = http://localhost:3000/api
+@courierId = 3ba0c680-e377-4b71-8b01-9a74070a7578
+@adminToken = YOUR_ADMIN_TOKEN
+@courierToken = YOUR_COURIER_TOKEN
+@orderId = YOUR_DELIVERED_ORDER_ID
+
+### 1. Register/Update Courier verification data (Manual DB or Mock)
+# Assuming courierId is already a DELIVERY role user.
+
+### 2. Admin: Get Pending Couriers
+GET {{baseUrl}}/logistics/admin/couriers/pending
+Authorization: Bearer {{adminToken}}
+
+### 3. Admin: Verify Courier
+PATCH {{baseUrl}}/logistics/admin/couriers/{{courierId}}/verify
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+    "status": "VERIFIED",
+    "reason": "Documents look good"
+}
+
+### 4. Create Order with Dynamic Delivery Fee
+# (Use merchants.http to find a merchant and calculate delivery first)
+POST {{baseUrl}}/orders
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+    "merchantId": "MERCHANT_ID",
+    "items": [
+        { "productId": "PRODUCT_ID", "quantity": 1 }
+    ],
+    "deliveryAddress": "Test Address",
+    "deliveryLat": 9.9333,
+    "deliveryLng": -84.0833
+}
+
+### 5. Check Order Earnings (Admin View)
+GET {{baseUrl}}/orders/{{orderId}}
+Authorization: Bearer {{adminToken}}
+
+# EXPECTED in Response:
+# "deliveryFee": 2000.00
+# "platformFee": 300.00
+# "courierEarnings": 1700.00
+
+### 6. Create Courier Review
+POST {{baseUrl}}/reviews/courier
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+    "orderId": "{{orderId}}",
+    "rating": 5,
+    "comment": "Excellent and fast delivery!"
+}
+
+### 7. Get Courier Stats (including reviews)
+GET {{baseUrl}}/reviews/courier/{{courierId}}/stats
+
+### 8. Get Courier Dashboard Stats
+GET {{baseUrl}}/courier/stats
+Authorization: Bearer {{courierToken}}

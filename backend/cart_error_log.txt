@@ -1,0 +1,12 @@
+ERROR: syntax error at or near ")"
+STACK: QueryFailedError: syntax error at or near ")"
+    at PostgresQueryRunner.query (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\node_modules\typeorm\src\driver\postgres\PostgresQueryRunner.ts:325:19)
+    at processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async SelectQueryBuilder.loadRawResults (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\node_modules\src\query-builder\SelectQueryBuilder.ts:3868:25)
+    at async SelectQueryBuilder.executeEntitiesAndRawResults (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\node_modules\src\query-builder\SelectQueryBuilder.ts:3614:26)
+    at async SelectQueryBuilder.getRawAndEntities (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\node_modules\src\query-builder\SelectQueryBuilder.ts:1671:29)
+    at async SelectQueryBuilder.getMany (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\node_modules\src\query-builder\SelectQueryBuilder.ts:1761:25)
+    at async ProductsService.findByIds (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\src\modules\products\products.service.ts:65:16)
+    at async Promise.all (index 0)
+    at async OrdersService.create (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\src\modules\orders\orders.service.ts:48:55)
+    at async verifyCartCheckout (C:\Users\edmoq\Documents\Vibe coder 1\Proyectos PRO\USO de LLM gratuitos\caribe digital CR\backend\src\scripts\verify-cart-checkout.ts:78:23)

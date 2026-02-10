@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Tilopay SDK Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://app.tilopay.com/sdk/v1/sdk.min.js"></script>
+    <style>
+        body { font-family: monospace; background: #111; color: #0f0; padding: 20px; }
+        #log { white-space: pre-wrap; margin-top: 20px; border: 1px solid #333; padding: 10px; max-height: 600px; overflow-y: auto; }
+        input, select { display: block; margin: 5px 0; padding: 8px; background: #222; color: #fff; border: 1px solid #444; width: 300px; }
+        button { padding: 10px 20px; background: #0a0; color: #000; border: none; cursor: pointer; margin: 5px; font-weight: bold; }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #0af; }
+    </style>
+</head>
+<body>
+    <h2>🧪 Tilopay SDK V1 - Direct Browser Test</h2>
+    
+    <div class="payFormTilopay">
+        <select id="method">
+            <option value="">Select Method</option>
+        </select>
+        <input type="text" id="ccnumber" placeholder="Card Number" />
+        <input type="text" id="expdate" placeholder="MM / YY" />
+        <input type="text" id="cvv" placeholder="CVV" />
+        <select id="cards"></select>
+        <div id="result" style="display:none"></div>
+    </div>
+    
+    <button onclick="testInit()">Step 1: Test Init with JWT</button>
+    <button onclick="testPayment()">Step 2: Test startPayment</button>
+    <button onclick="testManualProcessSdk()">Debug: Manual processSdk call</button>
+    
+    <div id="log"></div>
+
+    <script>
+        function log(msg, cls) {
+            const el = document.getElementById('log');
+            const line = document.createElement('div');
+            line.className = cls || '';
+            line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            el.appendChild(line);
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // Intercept ALL XHR to see what the SDK sends
+        const origXHR = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url) {
+            log(`XHR: ${method} ${url}`, 'info');
+            this._url = url;
+            this._method = method;
+            const origSend = this.send;
+            this.send = function(data) {
+                log(`XHR SEND to ${this._url}: ${data}`, 'info');
+                this.addEventListener('load', function() {
+                    log(`XHR RESPONSE from ${this._url}: status=${this.status} body=${this.responseText.substring(0, 500)}`, this.status >= 400 ? 'error' : 'success');
+                });
+                this.addEventListener('error', function() {
+                    log(`XHR ERROR from ${this._url}`, 'error');
+                });
+                origSend.call(this, data);
+            };
+            origXHR.apply(this, arguments);
+        };
+        
+        // Also intercept jQuery ajax
+        if ($.ajaxPrefilter) {
+            $.ajaxPrefilter(function(options, originalOptions, jqXHR) {
+                log(`jQuery AJAX: ${options.type} ${options.url} async=${options.async}`, 'info');
+                log(`jQuery AJAX data: ${JSON.stringify(options.data)}`, 'info');
+                log(`jQuery AJAX headers: ${JSON.stringify(options.headers)}`, 'info');
+            });
+        }
+
+        let savedJwt = '';
+
+        async function getToken() {
+            log('Fetching token from backend...');
+            try {
+                // Login first
+                const loginRes = await fetch('http://localhost:3005/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({email: 'admin@caribedigital.cr', password: 'CaribeMaximumSecurity2026!'})
+                });
+                const loginData = await loginRes.json();
+                const appJwt = loginData.access_token;
+                log(`App JWT: ${appJwt.substring(0, 30)}...`);
+
+                // Get tilopay token
+                const tokenRes = await fetch('http://localhost:3005/api/payments/tilopay-token', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${appJwt}`
+                    },
+                    body: JSON.stringify({orderId: '73a562f1-14a8-41d8-acec-2fbdb746eae4', amount: 15000, currency: 'CRC'})
+                });
+                const tokenData = await tokenRes.json();
+                log(`Backend response: ${JSON.stringify(tokenData)}`, tokenData.success ? 'success' : 'error');
+                savedJwt = tokenData.token;
+                return tokenData;
+            } catch (e) {
+                log(`Token fetch error: ${e.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testInit() {
+            log('=== STARTING INIT TEST ===');
+            
+            const tokenData = await getToken();
+            if (!tokenData || !tokenData.token) {
+                log('No token available!', 'error');
+                return;
+            }
+
+            log(`Token type: ${tokenData.token.startsWith('eyJ') ? 'JWT' : 'Session Code'}`);
+            log(`Token length: ${tokenData.token.length}`);
+
+            const config = {
+                token: tokenData.token,
+                currency: 'CRC',
+                amount: '150.00',
+                orderNumber: '73a562f1-14a8-41d8-acec-2fbdb746eae4',
+                language: 'es',
+                billToFirstName: 'Carlos',
+                billToLastName: 'Test',
+                billToAddress: 'Puerto Viejo',
+                billToCity: 'San Jose',
+                billToState: 'SJ',
+                billToCountry: 'CR',
+                billToTelephone: '88888888',
+                billToEmail: 'test@caribedigital.cr',
+                capture: '1',
+                redirect: 'http://localhost:5173/payment/callback'
+            };
+
+            log(`Init config: ${JSON.stringify(config, null, 2)}`);
+
+            try {
+                log('Calling Tilopay.Init()...');
+                const result = Tilopay.Init(config);
+                log(`Init result: ${JSON.stringify(result)}`, result.message === 'Success' ? 'success' : 'error');
+            } catch (e) {
+                log(`Init threw exception: ${e.message}`, 'error');
+                log(`Stack: ${e.stack}`, 'error');
+            }
+        }
+
+        function testPayment() {
+            log('=== STARTING PAYMENT TEST ===');
+            try {
+                const result = Tilopay.startPayment();
+                log(`startPayment result: ${JSON.stringify(result)}`);
+            } catch (e) {
+                log(`startPayment error: ${e.message}`, 'error');
+            }
+        }
+
+        async function testManualProcessSdk() {
+            log('=== MANUAL processSdk TEST (from browser) ===');
+            if (!savedJwt) {
+                const tokenData = await getToken();
+                if (tokenData) savedJwt = tokenData.token;
+            }
+            
+            try {
+                // Exact same call the SDK makes but with fetch
+                const response = await fetch('https://app.tilopay.com/api/v1/processSdk', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'bearer ' + savedJwt,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'module=payment&amount=150.00&currency=CRC&billToEmail=test@caribedigital.cr&orderNumber=test-manual-001'
+                });
+                const text = await response.text();
+                log(`processSdk status: ${response.status}`, response.ok ? 'success' : 'error');
+                log(`processSdk body: ${text}`, response.ok ? 'success' : 'error');
+                log(`CORS headers: Access-Control-Allow-Origin: ${response.headers.get('Access-Control-Allow-Origin')}`);
+            } catch (e) {
+                log(`processSdk fetch error: ${e.message}`, 'error');
+                log(`This is likely a CORS error!`, 'error');
+            }
+        }
+
+        log('Page loaded. jQuery: ' + (typeof $ !== 'undefined' ? $.fn.jquery : 'NOT LOADED'));
+        log('Tilopay SDK: ' + (typeof Tilopay !== 'undefined' ? 'LOADED' : 'NOT LOADED'));
+    </script>
+</body>
+</html>

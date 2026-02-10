@@ -1,0 +1,61 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Testing
+coverage
+
+# Production
+dist
+build
+
+# Misc
+.DS_Store
+.env
+.env.*
+!.env.example
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+logs/
+*.log
+
+# Uploads (local dev only, ephemeral in cloud)
+backend/uploads/
+
+# Secrets
+*.pem
+*.key
+
+# Agent/AI tool files (not needed in repo)
+.agent/
+.agent_hub/
+.agent_memory/
+.gemini/
+.context_map.json
+.dependency_graph.json
+.neural_insights.json
+.system_health.json
+
+# Legacy & dev tools
+backend_legacy/
+frontend_legacy/
+mejoramiento del antigravity/
+swarm/
+
+# Project-specific build outputs
+backend/dist
+backend/node_modules
+frontend/dist
+frontend/node_modules
+infrastructure/data

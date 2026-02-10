@@ -1,0 +1,27 @@
+### Merchants Test - Caribe Digital v2.0
+
+@baseUrl = http://localhost:3000
+
+# @name createMerchant
+POST {{baseUrl}}/merchants
+Content-Type: application/json
+
+{
+    "name": "Restaurante El Ancla",
+    "description": "Mariscos frescos y sabor caribeño",
+    "category": "restaurant",
+    "address": "Frente a la playa, Puerto Viejo",
+    "phone": "2750-0000",
+    "latitude": 9.6558,
+    "longitude": -82.7534
+}
+
+###
+
+# @name getAllMerchants
+GET {{baseUrl}}/merchants
+
+###
+
+# @name getNearbyMerchants
+GET {{baseUrl}}/merchants/nearby?lat=9.65&lng=-82.75&radius=10000

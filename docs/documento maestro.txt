@@ -1,0 +1,38 @@
+# PUERTO DIGITAL - DOCUMENTO MAESTRO
+
+## 1. Visión del Proyecto
+Puerto Digital es una plataforma digital de logística y delivery de alto rendimiento diseñada específicamente para la región del Caribe costarricense. Su objetivo es conectar comercios locales con usuarios finales a través de una experiencia de usuario fluida, elegante y culturalmente resonante.
+
+## 2. Pilares de Diseño: Modernismo Tropical
+- **Estética**: "Modernismo Tropical" - una mezcla de elegancia minimalista con la calidez y vibrancia del Caribe.
+- **Paleta de Colores**: "Muted Power" (Tonos profundos de verde jungla, azul océano oscuro, acentos de arena dorada y terracota).
+- **UX**: "Mekatelyu UX" - Microcopy que utiliza expresiones locales de Limón (ej: "Wha'ppen?", "Everything Bless") para crear cercanía.
+- **Interfaz**: Glassmorphism sutil, Bento-Grid y micro-animaciones orgánicas.
+
+## 3. Logística y Funcionalidades Avanzadas
+- **Real-Time Tracking**: Uso de WebSockets para el seguimiento en vivo del repartidor.
+- **Offline-First**: Funcionalidad limitada sin conexión para áreas con cobertura inestable.
+- **Rutas Inteligentes**: Optimización automática basada en tráfico local y estado de las vías.
+- **Prueba de Entrega**: Foto y firma digital con marca de tiempo y GPS.
+
+## 4. Stack Tecnológico
+### Backend
+- Framework: NestJS (TypeScript)
+- Base de Datos: PostgreSQL + PostGIS (Geolocalización avanzada)
+- Caché/Mensajería: Redis + RabbitMQ
+- Arquitectura: Estructura modular escalable.
+
+### Frontend
+- Framework: React + Vite (PWA)
+- Estilo: Vanilla CSS con variables de diseño (Tokens).
+- Offline: Estrategia de caching Service Workers.
+
+## 5. Seguridad y Pagos
+- **Pagos**: Integración con Stripe y soporte para confirmación de SINPE Móvil.
+- **Autenticación**: JWT con rotación de tokens y soporte biométrico en móviles.
+
+## 6. Roadmap: Fase 1 (Cimientos)
+1. Setup de infraestructura y contenedores.
+2. Definición del Design System "Modernismo Tropical".
+3. MVP del flujo de Órdenes y Despacho.
+4. Sistema de Seguimiento en Tiempo Real.

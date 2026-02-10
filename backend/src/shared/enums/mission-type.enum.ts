@@ -1,0 +1,5 @@
+export enum MissionType {
+    FOOD_DELIVERY = 'FOOD_DELIVERY',
+    PRIVATE_PARCEL = 'PRIVATE_PARCEL',
+    RIDE_HAILING = 'RIDE_HAILING',
+}

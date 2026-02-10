@@ -1,0 +1,462 @@
+/* ===== OrderTracking.css ===== */
+/* Premium real-time delivery tracking styles */
+
+.order-tracking {
+    min-height: 100dvh;
+    background: var(--background);
+    color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.order-tracking__bg {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.order-tracking__bg::before {
+    content: '';
+    position: absolute;
+    top: -15%;
+    right: -15%;
+    width: 50%;
+    height: 50%;
+    background: radial-gradient(circle, rgba(0, 255, 102, 0.06) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+.order-tracking__bg::after {
+    content: '';
+    position: absolute;
+    bottom: -15%;
+    left: -15%;
+    width: 40%;
+    height: 40%;
+    background: radial-gradient(circle, rgba(0, 200, 255, 0.04) 0%, transparent 70%);
+    border-radius: 50%;
+}
+
+/* Header */
+.tracking-header {
+    position: relative;
+    z-index: 10;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tracking-header__back {
+    width: 48px;
+    height: 48px;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tracking-header__back:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.tracking-header__info {
+    flex: 1;
+}
+
+.tracking-header__label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--primary);
+}
+
+.tracking-header__title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-style: italic;
+}
+
+/* Main content */
+.tracking-content {
+    position: relative;
+    z-index: 10;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+/* Status card */
+.tracking-status-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 2rem;
+    padding: 2rem;
+}
+
+.tracking-status-card__current {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.tracking-status-card__icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.tracking-status-card__icon--pending {
+    background: rgba(255, 180, 0, 0.15);
+    color: #FFB400;
+}
+
+.tracking-status-card__icon--confirmed {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3B82F6;
+}
+
+.tracking-status-card__icon--preparing {
+    background: rgba(249, 115, 22, 0.15);
+    color: #F97316;
+}
+
+.tracking-status-card__icon--ready {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+}
+
+.tracking-status-card__icon--on_way {
+    background: rgba(0, 255, 102, 0.15);
+    color: var(--primary);
+}
+
+.tracking-status-card__icon--delivered {
+    background: rgba(0, 255, 102, 0.2);
+    color: var(--primary);
+}
+
+.tracking-status-card__text h3 {
+    font-size: 1.125rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+}
+
+.tracking-status-card__text p {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.25rem;
+}
+
+/* Timeline */
+.tracking-timeline {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.tracking-timeline__step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.tracking-timeline__step:last-child {
+    padding-bottom: 0;
+}
+
+.tracking-timeline__dot-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 24px;
+    flex-shrink: 0;
+}
+
+.tracking-timeline__dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    z-index: 2;
+    transition: all 0.4s ease;
+}
+
+.tracking-timeline__dot--active {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 12px rgba(0, 255, 102, 0.4);
+}
+
+.tracking-timeline__dot--done {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.tracking-timeline__dot--current {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 16px rgba(0, 255, 102, 0.5);
+    animation: tracking-pulse 2s ease-in-out infinite;
+}
+
+@keyframes tracking-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 12px rgba(0, 255, 102, 0.3);
+    }
+
+    50% {
+        box-shadow: 0 0 24px rgba(0, 255, 102, 0.6);
+    }
+}
+
+.tracking-timeline__line {
+    width: 2px;
+    flex: 1;
+    min-height: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    transition: background 0.4s ease;
+}
+
+.tracking-timeline__line--done {
+    background: var(--primary);
+}
+
+.tracking-timeline__label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.3);
+    padding-top: 0;
+    line-height: 1;
+    transition: color 0.3s ease;
+}
+
+.tracking-timeline__label--active {
+    color: white;
+}
+
+.tracking-timeline__label--current {
+    color: var(--primary);
+    font-weight: 900;
+}
+
+/* Mini Map */
+.tracking-minimap {
+    border-radius: 2rem;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    height: 220px;
+    position: relative;
+}
+
+.tracking-minimap__placeholder {
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.tracking-minimap__placeholder span {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+.tracking-minimap .leaflet-container {
+    height: 100%;
+    width: 100%;
+    border-radius: 2rem;
+}
+
+/* OTP Card */
+.tracking-otp {
+    background: rgba(0, 255, 102, 0.05);
+    border: 1px solid rgba(0, 255, 102, 0.15);
+    border-radius: 2rem;
+    padding: 2rem;
+    text-align: center;
+}
+
+.tracking-otp__label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--primary);
+    margin-bottom: 0.75rem;
+}
+
+.tracking-otp__code {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: 0.5em;
+    color: var(--primary);
+    text-shadow: 0 0 30px rgba(0, 255, 102, 0.3);
+    font-family: 'JetBrains Mono', monospace;
+    padding-left: 0.5em;
+    /* Compensate letter-spacing */
+}
+
+.tracking-otp__hint {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 0.75rem;
+    font-weight: 600;
+}
+
+.tracking-otp--loading {
+    opacity: 0.5;
+}
+
+/* Courier Card */
+.tracking-courier {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 2rem;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.tracking-courier__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 1rem;
+    background: rgba(0, 255, 102, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+}
+
+.tracking-courier__info {
+    flex: 1;
+}
+
+.tracking-courier__name {
+    font-weight: 800;
+    font-size: 0.95rem;
+}
+
+.tracking-courier__role {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.tracking-courier__actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.tracking-courier__btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 0.875rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tracking-courier__btn:hover {
+    background: rgba(0, 255, 102, 0.1);
+    color: var(--primary);
+    border-color: rgba(0, 255, 102, 0.2);
+}
+
+/* Delivered Celebration */
+.tracking-delivered {
+    text-align: center;
+    padding: 3rem 1.5rem;
+}
+
+.tracking-delivered__icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 2rem;
+    background: rgba(0, 255, 102, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--primary);
+    box-shadow: 0 0 40px rgba(0, 255, 102, 0.2);
+}
+
+.tracking-delivered__title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    font-style: italic;
+}
+
+.tracking-delivered__sub {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.5rem;
+}
+
+/* ETA bar */
+.tracking-eta {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 1.5rem;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.tracking-eta__label {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.tracking-eta__value {
+    font-size: 1.125rem;
+    font-weight: 900;
+    color: var(--primary);
+}

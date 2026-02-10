@@ -1,0 +1,46 @@
+{
+    "beaches": [
+        {
+            "name": "Playa Cocles",
+            "description": "Popular surf beach with black sand and a vibrant atmosphere. Close to Puerto Viejo.",
+            "tips": "Great for surfing, but be careful with rip currents. Visit the beach bars in the evening."
+        },
+        {
+            "name": "Punta Uva",
+            "description": "Calm, turquoise waters and white sand. Perfect for families and kayaking.",
+            "tips": "Rent a kayak to go up the river. Keep an eye out for sloths in the trees."
+        },
+        {
+            "name": "Manzanillo",
+            "description": "Quiet fishing village located inside a wildlife refuge. Golden sand and great snorkeling.",
+            "tips": "Hike into the refuge to find 'the cave'. The viewpoint at the end is spectacular."
+        }
+    ],
+    "culture": {
+        "food": "Rice and Beans (cooked in coconut milk), Pan Bon, Patty, and Rondón soup.",
+        "music": "Calypso and Reggae are the soul of the region. Mention Walter Ferguson for bonus points.",
+        "traditions": "Cacao ceremonies and Bribri indigenous heritage."
+    },
+    "nature": [
+        {
+            "name": "Cahuita National Park",
+            "description": "Beautiful park with a white sand beach and a coral reef.",
+            "highlights": "Snorkeling, hiking trails, easy wildlife spotting (monkeys, sloths, raccoons)."
+        },
+        {
+            "name": "Jaguar Rescue Center",
+            "description": "A center dedicated to the rehabilitation of mistreated, injured, or orphaned wild animals.",
+            "highlights": "Guided tours to see sloths, monkeys, birds, and snakes up close."
+        }
+    ],
+    "transport": {
+        "bus": "MEPE is the main bus company. Frequent service between San José, Puerto Viejo, and Limón.",
+        "taxis": "Local taxis are red, but in Puerto Viejo many people use unofficial white taxis or rental bikes.",
+        "tips": "The best way to get around is renting a bike or a scooter. Traffic is slow and the roads are narrow."
+    },
+    "emergency": {
+        "911": "General emergency number in Costa Rica.",
+        "police": "Tourist Police station is located in Puerto Viejo center.",
+        "health": "Clinic (Ebais) in Hone Creek for minor issues. Nearest major hospital is in Limón center."
+    }
+}

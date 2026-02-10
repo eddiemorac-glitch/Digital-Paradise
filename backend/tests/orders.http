@@ -1,0 +1,47 @@
+### Login User
+# @name login
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+    "email": "eddy@example.com",
+    "password": "Password123!"
+}
+
+###
+@token = {{login.response.body.access_token}}
+
+### Get Merchants
+# @name merchants
+GET http://localhost:3000/merchants
+Content-Type: application/json
+
+###
+@merchantId = {{merchants.response.body.0.id}}
+
+### Get Products for Merchant
+# @name products
+GET http://localhost:3000/products/merchant/{{merchantId}}
+Content-Type: application/json
+
+###
+@productId = {{products.response.body.0.id}}
+
+### Create Order
+POST http://localhost:3000/orders
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+    "merchantId": "{{merchantId}}",
+    "items": [
+        {
+            "productId": "{{productId}}",
+            "quantity": 2
+        }
+    ]
+}
+
+### Get My Orders
+GET http://localhost:3000/orders/mine
+Authorization: Bearer {{token}}

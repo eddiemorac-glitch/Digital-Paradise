@@ -1,0 +1,16 @@
+{
+    "name": "caribe-digital-cr",
+    "version": "2.0.0",
+    "private": true,
+    "scripts": {
+        "test:flow": "node tests_validation/test_flow.js",
+        "backend:dev": "npm run start:dev --prefix backend",
+        "frontend:dev": "npm run dev --prefix frontend",
+        "install:all": "npm install --prefix backend && npm install --prefix frontend",
+        "lint": "npm run lint --prefix backend && npm run lint --prefix frontend",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "husky": "^9.0.0"
+    }
+}
