@@ -66,7 +66,7 @@ export const PWAInstallPrompt = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed bottom-24 left-6 right-6 md:left-auto md:right-6 md:w-[400px] z-[200]"
+                className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[200]"
             >
                 <div className="glass border border-white/10 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10" />

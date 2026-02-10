@@ -63,7 +63,10 @@ async function bootstrap() {
     // Enable CORS
     app.enableCors({
         origin: process.env.NODE_ENV === 'production'
-            ? configService.get('FRONTEND_URL')
+            ? [
+                configService.get('FRONTEND_URL'),
+                /\.vercel\.app$/,
+            ]
             : true,
         methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         credentials: true,
