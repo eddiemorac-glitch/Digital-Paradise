@@ -20,7 +20,7 @@ interface UserProfileProps {
 
 export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoices }: UserProfileProps) => {
     const { logout, updateUser, user } = useAuthStore();
-    const { language } = useLanguageStore();
+    const { language, t } = useLanguageStore();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
 
@@ -118,14 +118,14 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                     onClick={onBack}
                     className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
                 >
-                    <ArrowLeft size={14} /> {language === 'es' ? 'ABORTAR' : 'ABORT'}
+                    <ArrowLeft size={14} /> {t('abort')}
                 </button>
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsEditModalOpen(true)}
                         className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
                     >
-                        <Settings size={14} /> {language === 'es' ? 'EDITAR' : 'EDIT'}
+                        <Settings size={14} /> {t('edit')}
                     </button>
                 </div>
             </div>
@@ -179,17 +179,17 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                                     <Bike size={32} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-black uppercase tracking-tight">Vehículo</h3>
-                                                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">Configuración de Enjambre</p>
+                                                    <h3 className="text-xl font-black uppercase tracking-tight">{t('vehicle')}</h3>
+                                                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">{t('swarm_config')}</p>
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Tipo</span>
-                                                    <span className="text-sm font-bold text-primary italic uppercase tracking-tighter">{profile.vehicleType || 'No Definido'}</span>
+                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('type')}</span>
+                                                    <span className="text-sm font-bold text-primary italic uppercase tracking-tighter">{profile.vehicleType || t('undefined')}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Placa</span>
+                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('plate')}</span>
                                                     <span className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
                                                         <Hash size={12} className="text-primary" /> {profile.vehiclePlate || 'N/A'}
                                                     </span>
@@ -203,21 +203,21 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                                     <Shield size={32} />
                                                 </div>
                                                 <div>
-                                                    <h3 className="text-xl font-black uppercase tracking-tight">Estatus</h3>
-                                                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">Clearance de Operación</p>
+                                                    <h3 className="text-xl font-black uppercase tracking-tight">{t('status')}</h3>
+                                                    <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">{t('ops_clearance')}</p>
                                                 </div>
                                             </div>
                                             <div className="space-y-4">
                                                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Verificación</span>
+                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('verification')}</span>
                                                     <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1 rounded-full ${profile.courierStatus === 'VERIFIED' ? 'bg-green-500/20 text-green-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
                                                         {profile.courierStatus || 'PENDING'}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl border border-white/5">
-                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Seguridad</span>
+                                                    <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{t('security')}</span>
                                                     <span className="text-sm font-bold text-white flex items-center gap-2">
-                                                        <CheckCircle2 size={12} className="text-primary" /> Lvl 1 Access
+                                                        <CheckCircle2 size={12} className="text-primary" /> {t('lvl_1_access')}
                                                     </span>
                                                 </div>
                                             </div>
@@ -232,12 +232,12 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                     <div className="glass p-8 rounded-[2.5rem] border-white/5 relative overflow-hidden">
                         <div className="flex items-center justify-between mb-8">
                             <div>
-                                <h3 className="text-xl font-black uppercase tracking-tight">{language === 'es' ? 'PRÓXIMO OBJETIVO' : 'NEXT OBJECTIVE'}</h3>
-                                <p className="text-xs text-white/40 font-bold uppercase tracking-widest">{language === 'es' ? 'Recompensa en camino' : 'Reward Incoming'}</p>
+                                <h3 className="text-xl font-black uppercase tracking-tight">{t('next_objective')}</h3>
+                                <p className="text-xs text-white/40 font-bold uppercase tracking-widest">{t('reward_incoming')}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-black text-primary">{remaining.toLocaleString()}</p>
-                                <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">{language === 'es' ? 'PUNTOS RESTANTES' : 'POINTS LEFT'}</p>
+                                <p className="text-[10px] text-white/40 font-black uppercase tracking-[0.2em]">{t('points_left')}</p>
                             </div>
                         </div>
 
@@ -257,13 +257,13 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                 onClick={onViewRewards}
                                 className="bg-primary hover:bg-primary/90 text-background font-black py-4 rounded-2xl transition-all hover:scale-[1.02] active:scale-95 text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                             >
-                                <Award size={16} /> {language === 'es' ? 'CENTRO DE CANJES' : 'REWARDS HUB'}
+                                <Award size={16} /> {t('rewards_hub')}
                             </button>
                             <button
                                 onClick={() => navigate('/map')}
                                 className="bg-white/5 hover:bg-white/10 text-white font-black py-4 rounded-2xl transition-all border border-white/10 text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2"
                             >
-                                <MapIcon size={16} /> {language === 'es' ? 'SOLICITAR REFUERZOS' : 'REQ REINFORCEMENTS'}
+                                <MapIcon size={16} /> {t('request_reinforcements')}
                             </button>
                         </div>
                     </div>
@@ -281,8 +281,8 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                 <Clock size={24} />
                             </div>
                             <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-tight">{language === 'es' ? 'HISTORIAL' : 'HISTORY'}</h3>
-                                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{language === 'es' ? 'REGISTRO DE OPERACIONES' : 'OPS LOG'}</p>
+                                <h3 className="text-sm font-black uppercase tracking-tight">{t('history_title')}</h3>
+                                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{t('history_desc')}</p>
                             </div>
                         </button>
 
@@ -294,8 +294,8 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                 <Ticket size={24} />
                             </div>
                             <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-tight">{language === 'es' ? 'FACTURACIÓN' : 'BILLING'}</h3>
-                                <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest">{language === 'es' ? 'FACTURACIÓN ELECTRÓNICA' : 'E-INVOICING'}</p>
+                                <h3 className="text-sm font-black uppercase tracking-tight">{t('billing_title')}</h3>
+                                <p className="text-[8px] text-white/40 font-bold uppercase tracking-widest">{t('billing_desc')}</p>
                             </div>
                         </button>
 
@@ -308,8 +308,8 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                     <Shield size={24} />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="text-sm font-black uppercase tracking-tight text-primary">Control Center</h3>
-                                    <p className="text-[8px] text-primary/40 font-bold uppercase tracking-widest">Panel de Administración</p>
+                                    <h3 className="text-sm font-black uppercase tracking-tight text-primary">{t('control_center')}</h3>
+                                    <p className="text-[8px] text-primary/40 font-bold uppercase tracking-widest">{t('admin_panel_desc')}</p>
                                 </div>
                             </button>
                         )}
@@ -323,8 +323,8 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                     <Store size={24} />
                                 </div>
                                 <div className="text-left">
-                                    <h3 className="text-sm font-black uppercase tracking-tight text-primary">{language === 'es' ? 'Mi Negocio' : 'My Business'}</h3>
-                                    <p className="text-[8px] text-primary/40 font-bold uppercase tracking-widest">Panel de Operaciones</p>
+                                    <h3 className="text-sm font-black uppercase tracking-tight text-primary">{t('dashboard')}</h3>
+                                    <p className="text-[8px] text-primary/40 font-bold uppercase tracking-widest">{t('ops_panel_desc')}</p>
                                 </div>
                             </button>
                         )}
@@ -337,8 +337,8 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                                 <MessageSquare size={24} />
                             </div>
                             <div className="text-left">
-                                <h3 className="text-sm font-black uppercase tracking-tight">{language === 'es' ? 'ASISTENTE' : 'ASSISTANT'}</h3>
-                                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{language === 'es' ? 'UPLINK DIRECTO CON COCO' : 'DIRECT COCO UPLINK'}</p>
+                                <h3 className="text-sm font-black uppercase tracking-tight">{t('assistant_title')}</h3>
+                                <p className="text-[10px] text-white/40 font-bold uppercase tracking-widest">{t('assistant_desc')}</p>
                             </div>
                         </button>
                     </div>
@@ -350,11 +350,11 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                             onClick={() => { logout(); onBack(); }}
                             className="w-full flex items-center justify-center gap-3 text-red-500/60 hover:text-red-500 transition-colors font-black uppercase tracking-[0.3em] text-[10px] py-4 rounded-2xl hover:bg-red-500/5 border border-transparent hover:border-red-500/20"
                         >
-                            <LogOut size={16} /> {language === 'es' ? 'DESCONECTAR' : 'TERMINATE LINK'}
+                            <LogOut size={16} /> {t('disconnect')}
                         </button>
                     </div>
                 </div>
             </div>
-        </motion.div>
+        </motion.div >
     );
 };

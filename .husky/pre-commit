@@ -1,0 +1,18 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running Pre-commit Checks..."
+
+# Run linting in backend and frontend
+echo "🧹 Linting Backend..."
+cd backend && npm run lint && cd ..
+
+echo "🧹 Linting Frontend..."
+cd frontend && npm run lint && cd ..
+
+# The flow test requires a running backend. 
+# We'll try to run it but it might fail if the server is down.
+# echo "🧪 Running Core Flow Test..."
+# npm run test:flow
+
+echo "✅ All checks passed!"

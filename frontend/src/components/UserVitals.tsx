@@ -2,6 +2,8 @@ import { motion } from 'framer-motion';
 import { Leaf } from 'lucide-react';
 import { CocoIcon } from './CocoIcon';
 
+import { useLanguageStore } from '../store/languageStore';
+
 interface UserVitalsProps {
     points: number;
     sustainabilityScore: number;
@@ -9,12 +11,13 @@ interface UserVitalsProps {
     role?: string;
 }
 
-export const UserVitals = ({ points, sustainabilityScore, language, role }: UserVitalsProps) => {
+export const UserVitals = ({ points, sustainabilityScore, role }: UserVitalsProps) => {
     const isCourier = role?.toLowerCase() === 'delivery';
+    const { t } = useLanguageStore();
 
     const stats = [
         {
-            label: language === 'es' ? 'COCO PUNTOS' : 'COCO POINTS',
+            label: t('coco_points'),
             value: points.toLocaleString(),
             icon: <CocoIcon size={20} />,
             color: 'text-primary',
@@ -23,9 +26,9 @@ export const UserVitals = ({ points, sustainabilityScore, language, role }: User
         },
         {
             label: isCourier
-                ? (language === 'es' ? 'PROXIMIDAD' : 'PROXIMITY')
-                : (language === 'es' ? 'SOSTENIBILIDAD' : 'SUSTAINABILITY'),
-            value: isCourier ? 'ACTIVA' : `${sustainabilityScore}%`,
+                ? t('proximity')
+                : t('sustainability_metric'),
+            value: isCourier ? t('active') : `${sustainabilityScore}%`,
             icon: <Leaf size={20} className="text-emerald-400" />,
             color: 'text-emerald-400',
             borderColor: 'border-emerald-400/20',

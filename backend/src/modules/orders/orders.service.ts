@@ -8,7 +8,8 @@ import { ProductsService } from '../products/products.service';
 import { MerchantsService } from '../merchants/merchants.service';
 import { OrderStatus } from '../../shared/enums/order-status.enum';
 import { OrderValidator } from './orders.validator';
-import { OrdersGateway } from './orders.gateway';
+import { OrdersGateway } from './orders.gateway'; // Assuming OrdersGateway exists
+import { HaciendaService } from '../hacienda/hacienda.service';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { OrderPaidEvent } from './events/order-paid.event';
 import { OrderCancelledEvent } from './events/order-cancelled.event';
@@ -36,6 +37,7 @@ export class OrdersService {
         @Inject(forwardRef(() => TilopayService))
         private readonly tilopayService: TilopayService,
         private readonly logisticsService: LogisticsService,
+        private readonly haciendaService: HaciendaService,
     ) { }
 
     /**
@@ -608,5 +610,42 @@ export class OrdersService {
         const sequence = `0010000101`.padStart(20, '0'); // Corrected to 20 chars
 
         return `506${day}${month}${year}${taxIdMock}${sequence}${situation}${security}`;
+    }
+
+    async emitInvoiceForOrder(orderId: string, userId: string, userRole: UserRole) {
+        const order = await this.findOne(orderId);
+
+        if (userRole === UserRole.MERCHANT) {
+            const merchant = await this.merchantsService.findByUser(userId);
+            if (order.merchantId !== merchant.id) {
+                this.logger.warn(`Unauthorized invoice emission attempt by user ${userId} for order ${orderId}`);
+                throw new BadRequestException('You are not authorized to emit invoices for this order');
+            }
+        }
+
+        if (order.paymentStatus !== 'PAID') {
+            throw new BadRequestException('Order must be PAID to emit an invoice');
+        }
+
+        try {
+            this.logger.log(`Attempting manual invoice emission for order ${orderId} by ${userId}`);
+            const result = await this.haciendaService.emitInvoice(order);
+
+            if (result && (result.clave || result.status === 'success')) {
+                await this.updateOrderMetadata(orderId, {
+                    haciendaClave: result.clave,
+                    haciendaStatus: 'EMITTED',
+                    haciendaEmittedAt: new Date().toISOString()
+                });
+                return { success: true, message: 'Invoice emitted successfully', clave: result.clave };
+            }
+
+            this.logger.error(`Hacienda service returned null for order ${orderId}`);
+            throw new Error('Hacienda service unavailable');
+
+        } catch (error) {
+            this.logger.error(`Manual Hacienda emission failed for ${orderId}: ${error.message}`, error.stack);
+            throw error;
+        }
     }
 }

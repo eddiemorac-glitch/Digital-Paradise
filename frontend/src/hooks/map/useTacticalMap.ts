@@ -91,7 +91,6 @@ export const useTacticalMap = ({
                 if (controller.signal.aborted) return;
 
                 const fetchedEvents: EventData[] = geojson.features.map((f: EventGeoJSONFeature) => ({
-                    // Provide defaults for strictly required fields to satisfy the compiler
                     description: '',
                     date: '',
                     category: 'other',
@@ -118,15 +117,16 @@ export const useTacticalMap = ({
         };
 
         setIsLoading(true);
-        // Fast initial load (300ms), debounced subsequent viewport moves (1000ms)
-        const delay = viewKey === 0 ? 300 : 1000;
+        // Standard debounced sync. 
+        // We rely on the initial onMapReady call from MapController + triggerRefresh.
+        const delay = viewKey === 0 ? 500 : 1000;
         const timeoutId = setTimeout(fetchEvents, delay);
 
         return () => {
             controller.abort();
             clearTimeout(timeoutId);
         };
-    }, [mapRef, state.mode, viewKey]);
+    }, [mapRef, state.mode, viewKey]); // REMOVED dynamicEvents.length === 0 to break loop
 
     // 3. Intelligence Sub-Systems
     const filteredEvents = useMemo(() => {

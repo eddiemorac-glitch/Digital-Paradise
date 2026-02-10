@@ -8,7 +8,7 @@ import { OrderFulfillmentService } from './order-fulfillment.service';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../shared/enums/user-role.enum';
 import { MerchantsService } from '../merchants/merchants.service';
-import { HaciendaService } from '../hacienda/hacienda.service';
+
 import { Response } from 'express';
 import { PdfService } from '../emails/pdf.service';
 
@@ -20,7 +20,6 @@ export class OrdersController {
     constructor(
         private readonly ordersService: OrdersService,
         private readonly merchantsService: MerchantsService,
-        private readonly haciendaService: HaciendaService,
         private readonly orderFulfillmentService: OrderFulfillmentService,
         private readonly pdfService: PdfService,
     ) { }
@@ -212,46 +211,7 @@ export class OrdersController {
     @UseGuards(RolesGuard)
     @Roles(UserRole.MERCHANT, UserRole.ADMIN)
     async emitInvoice(@Param('id') id: string, @Request() req) {
-        const order = await this.ordersService.findOne(id);
-
-        // Security check: Only merchant owner or admin
-        if (req.user.role === UserRole.MERCHANT) {
-            const merchant = await this.merchantsService.findByUser(req.user.userId);
-            if (order.merchantId !== merchant.id) {
-                this.logger.warn(`Unauthorized invoice emission attempt by user ${req.user.userId} for order ${id}`);
-                throw new BadRequestException('You are not authorized to emit invoices for this order');
-            }
-        }
-
-        if (order.paymentStatus !== 'PAID') {
-            throw new BadRequestException('Order must be PAID to emit an invoice');
-        }
-
-        try {
-            this.logger.log(`Attempting manual invoice emission for order ${id} by ${req.user.userId} `);
-            const result = await this.haciendaService.emitInvoice(order);
-
-            if (result && (result.clave || result.status === 'success')) {
-                await this.ordersService.updateOrderMetadata(id, {
-                    haciendaClave: result.clave,
-                    haciendaStatus: 'EMITTED',
-                    haciendaEmittedAt: new Date().toISOString()
-                });
-                this.logger.log(`Invoice emitted successfully for order ${id}`);
-                return { success: true, message: 'Invoice emitted successfully', clave: result.clave };
-            }
-
-            // If result is null/false, the Circuit Breaker might be open OR Hacienda failed silently
-            this.logger.error(`Hacienda service returned null for order ${id}(Possible Circuit Open)`);
-            throw new ServiceUnavailableException('Hacienda service is currently unavailable. Please try again later.');
-
-        } catch (error) {
-            this.logger.error(`Manual Hacienda emission failed for ${id}: ${error.message}`, error.stack);
-            if (error instanceof HttpException) {
-                throw error;
-            }
-            throw new InternalServerErrorException(error.message || 'Failed to emit invoice');
-        }
+        return this.ordersService.emitInvoiceForOrder(id, req.user.userId, req.user.role);
     }
 
 }

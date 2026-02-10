@@ -34,7 +34,7 @@ export class UploadsController {
 
         // Construct public URL
         // Assuming backend runs on port 3000 or determined by env
-        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
         return {
             url: `${baseUrl}/uploads/${file.filename}`,
             filename: file.filename
@@ -63,7 +63,7 @@ export class UploadsController {
     uploadProductImage(@UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('File is required');
 
-        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
         return {
             url: `${baseUrl}/uploads/products/${file.filename}`,
             filename: file.filename
@@ -91,7 +91,7 @@ export class UploadsController {
     uploadMerchantImage(@UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('File is required');
 
-        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3000';
+        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
         return {
             url: `${baseUrl}/uploads/merchants/${file.filename}`,
             filename: file.filename

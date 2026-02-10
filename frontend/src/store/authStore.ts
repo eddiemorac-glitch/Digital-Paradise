@@ -4,7 +4,7 @@ import { useCartStore } from './cartStore';
 export interface User {
     id: string;
     email: string;
-    role: 'ADMIN' | 'MERCHANT' | 'COURIER' | 'USER';
+    role: 'ADMIN' | 'MERCHANT' | 'COURIER' | 'USER' | 'admin' | 'merchant' | 'delivery' | 'user';
     points?: number;
     name?: string;
     avatar?: string;

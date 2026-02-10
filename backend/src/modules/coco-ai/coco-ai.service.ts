@@ -30,14 +30,18 @@ export class CocoAiService implements OnModuleInit {
         const apiKey = this.configService.get<string>('OPENROUTER_API_KEY');
         this.logger.log(`OpenRouter API Key: ${apiKey ? 'CONFIGURED' : 'MISSING'}`);
 
-        this.openai = new OpenAI({
-            baseURL: 'https://openrouter.ai/api/v1',
-            apiKey: apiKey,
-            defaultHeaders: {
-                'HTTP-Referer': 'https://caribedigital.cr',
-                'X-Title': 'DIGITAL PARADISE',
-            },
-        });
+        if (apiKey) {
+            this.openai = new OpenAI({
+                baseURL: 'https://openrouter.ai/api/v1',
+                apiKey: apiKey,
+                defaultHeaders: {
+                    'HTTP-Referer': 'https://caribedigital.cr',
+                    'X-Title': 'DIGITAL PARADISE',
+                },
+            });
+        } else {
+            this.logger.warn('OPENROUTER_API_KEY not set — Coco AI chatbot will be unavailable.');
+        }
 
         // Load knowledge base
         try {
@@ -123,6 +127,9 @@ ${userContext}`;
     }
 
     async chat(message: string, user?: any) {
+        if (!this.openai) {
+            return { text: 'COCO Caribeño está descansando en la hamaca. 🌴 El servicio AI no está configurado en este momento.' };
+        }
         try {
             const model = this.configService.get<string>('OPENROUTER_MODEL') || 'nvidia/nemotron-3-nano-30b-a3b:free';
             const userId = user?.userId || user?.id; // Robust ID detection
@@ -204,6 +211,10 @@ ${userContext}`;
     }
 
     async *chatStream(message: string, user?: any): AsyncGenerator<string> {
+        if (!this.openai) {
+            yield 'COCO Caribeño está descansando en la hamaca. 🌴 El servicio AI no está configurado en este momento.';
+            return;
+        }
         try {
             const model = this.configService.get<string>('OPENROUTER_MODEL') || 'nvidia/nemotron-3-nano-30b-a3b:free';
             const userId = user?.userId || user?.id;

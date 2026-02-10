@@ -70,9 +70,9 @@ async function bootstrap() {
         allowedHeaders: 'Content-Type, Accept, Authorization',
     });
 
-    const port = configService.get<number>('PORT') || 3000;
+    const port = configService.get<number>('PORT') || 3001;
 
-    await app.listen(port);
+    await app.listen(port, '0.0.0.0');
 
     if (useEmergencyMode) {
         console.log(`🚨 Caribe Digital Backend - EMERGENCY MODE`);

@@ -85,9 +85,9 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                                 className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none"
                             >
                                 {view === 'create' ? (
-                                    <span>Publicar <span className="text-primary italic">Entradas</span></span>
+                                    <span>Publicar <span className="text-primary italic">Eventos</span></span>
                                 ) : (
-                                    <span>Store de <span className="text-primary italic">Entradas</span></span>
+                                    <span>Store de <span className="text-primary italic">Eventos</span></span>
                                 )}
                             </motion.h2>
                         </div>
