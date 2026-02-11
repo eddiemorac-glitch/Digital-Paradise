@@ -34,10 +34,13 @@ if (process.env.DATABASE_URL) {
             },
         },
     };
-    console.log('Using MANUAL parsing for DATABASE_URL');
-    console.log('Hostname:', dbUrl.hostname);
-    console.log('SSL Config:', JSON.stringify(config.ssl));
-    console.log('Extra Config:', JSON.stringify(config.extra));
+    // console.log('Using MANUAL parsing for DATABASE_URL');
+    // console.log('Hostname:', dbUrl.hostname);
+    // console.log('SSL Config:', JSON.stringify(config.ssl));
+    // console.log('Extra Config:', JSON.stringify(config.extra));
+
+    // CRASH FOR DEBUGGING to ensure we see the values
+    throw new Error(`DEBUG CRASH: Hostname=${dbUrl.hostname}, SSL=${JSON.stringify(config.ssl)}`);
 } else {
     config = {
         type: 'postgres',
