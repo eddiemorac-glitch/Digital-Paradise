@@ -12,7 +12,7 @@ import { Injectable, Logger } from '@nestjs/common';
     cors: {
         origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     },
-    namespace: '/logistics', // Optional: separate namespace if needed, keeping global for now to match frontend
+    // namespace: '/logistics', // REMOVED: Frontend uses single default socket connection
 })
 @Injectable()
 export class LogisticsGateway implements OnGatewayConnection, OnGatewayDisconnect {
