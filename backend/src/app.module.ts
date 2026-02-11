@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeOrmConfig } from './config/typeorm.config';
 import { ScheduleModule } from '@nestjs/schedule'; // Added for Tasks
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
@@ -38,35 +39,10 @@ import 'winston-daily-rotate-file';
 
 @Module({
     imports: [
+        ScheduleModule.forRoot(), // Enable Cron/Intervals
+        TypeOrmModule.forRoot(typeOrmConfig),
         ConfigModule.forRoot({
             isGlobal: true,
-        }),
-        ScheduleModule.forRoot(), // Enable Cron/Intervals
-        TypeOrmModule.forRootAsync({
-            inject: [ConfigService],
-            useFactory: (configService: ConfigService) => ({
-                type: 'postgres',
-                host: configService.get<string>('DB_HOST', 'localhost'),
-                port: configService.get<number>('DB_PORT', 5432),
-                username: configService.get<string>('DB_USERNAME', 'postgres'),
-                password: configService.get<string>('DB_PASSWORD', 'postgres'),
-                database: configService.get<string>('DB_NAME', 'caribe_digital'),
-                entities: [join(__dirname, '**', '*.entity{.ts,.js}')],
-                autoLoadEntities: true,
-                subscribers: [UserLocationSubscriber, MerchantLocationSubscriber],
-                // FORCE SYNC: Default to true if not explicitly false to fix missing tables
-                synchronize: configService.get('DB_SYNC') !== 'false',
-                logging: configService.get('NODE_ENV') !== 'production',
-                // SERVERLESS OPTIMIZATION: Connection Pooling & Timezone
-                extra: {
-                    max: configService.get('DB_POOL_SIZE') || 20, // Limit connections for Render
-                    connectionTimeoutMillis: 5000,
-                },
-                timezone: 'America/Costa_Rica', // Force local time for DB operations
-                ...(configService.get('NODE_ENV') === 'production' && {
-                    ssl: { rejectUnauthorized: false },
-                }),
-            }),
         }),
         EventEmitterModule.forRoot(),
         ServeStaticModule.forRoot({
