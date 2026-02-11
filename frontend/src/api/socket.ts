@@ -20,6 +20,7 @@ class SocketService {
 
             this.socket = io(SOCKET_URL, {
                 auth: { token },
+                transports: ['websocket'], // Force WS to avoid Sticky Session issues on Render
                 reconnection: true,
                 reconnectionAttempts: Infinity,
                 reconnectionDelay: 1000

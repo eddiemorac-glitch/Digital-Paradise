@@ -43,8 +43,15 @@ export class TilopayService {
         };
 
         this.baseUrl = this.config.baseUrl || 'https://app.tilopay.com/api/v1';
-        this.frontendUrl = this.configService.get('FRONTEND_URL') || 'http://localhost:5173';
-        this.backendUrl = this.configService.get('BACKEND_URL') || 'http://localhost:3000';
+
+        // CRITICAL: Fail fast if URLs are missing in production. 
+        // In dev, we can fallback, but we should be explicit.
+        this.frontendUrl = this.configService.get('FRONTEND_URL') || 'https://digital-paradise-v2.vercel.app';
+        this.backendUrl = this.configService.get('BACKEND_URL') || 'https://digital-paradise.onrender.com';
+
+        if (!this.frontendUrl.startsWith('http')) {
+            this.logger.error('FRONTEND_URL environment variable is invalid');
+        }
 
         // Initialize Circuit Breaker
         this.circuitBreaker = new CircuitBreaker('Tilopay', {

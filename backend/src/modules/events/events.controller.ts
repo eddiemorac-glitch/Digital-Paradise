@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query, ParseFloatPipe } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query, ParseFloatPipe, BadRequestException } from '@nestjs/common';
 import { EventsService } from './events.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -36,8 +36,8 @@ export class EventsController {
         @Query('radius', new ParseFloatPipe({ optional: true })) radius?: number,
     ) {
         // Basic range validation
-        if (lat < -90 || lat > 90) throw new Error('Invalid latitude');
-        if (lng < -180 || lng > 180) throw new Error('Invalid longitude');
+        if (lat < -90 || lat > 90) throw new BadRequestException('Invalid latitude');
+        if (lng < -180 || lng > 180) throw new BadRequestException('Invalid longitude');
         return this.eventsService.findNearbyEvents(lat, lng, radius || 5);
     }
 
