@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Paradise QR Generator</title>
+    <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f4f8;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #qr-container {
+            padding: 40px;
+            background: white;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #008080;
+            margin-bottom: 5px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Digital Paradise</h1>
+    <p>QR Code for https://digital-paradise.vercel.app/</p>
+    <div id="qr-container"></div>
+
+    <script type="text/javascript">
+        const qrCode = new QRCodeStyling({
+            width: 500,
+            height: 500,
+            type: "svg",
+            data: "https://digital-paradise.vercel.app/",
+            image: "../frontend/public/logo.png",
+            dotsOptions: {
+                color: "#1A5F7A",
+                type: "extra-rounded"
+            },
+            backgroundOptions: {
+                color: "#ffffff",
+            },
+            imageOptions: {
+                crossOrigin: "anonymous",
+                margin: 10,
+                imageSize: 0.4
+            },
+            cornersSquareOptions: {
+                type: "extra-rounded",
+                color: "#008080"
+            },
+            cornersDotOptions: {
+                type: "dot",
+                color: "#E69138"
+            }
+        });
+
+        qrCode.append(document.getElementById("qr-container"));
+    </script>
+</body>
+
+</html>

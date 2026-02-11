@@ -42,7 +42,9 @@ export const getEventMarkerHTML = (
     const zoomScale = Math.max(0.7, Math.pow(1.15, zoom - 15)) * sizeMultiplier * tierScale;
 
     // Deterministic Animation Seed from ID
-    const seed = event.id.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const rawId = event.id as any;
+    const safeId = typeof rawId === 'string' ? rawId : (Array.isArray(rawId) ? rawId.join('') : String(rawId || ''));
+    const seed = safeId.split('').reduce((acc: number, char: string) => acc + char.charCodeAt(0), 0);
     const floatDuration = (3 + (seed % 20) / 10) + 's';
     const pulseDuration = (2 + (seed % 10) / 5) + 's';
 

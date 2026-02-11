@@ -6,6 +6,8 @@ export enum EventCategory {
     RESTAURANT = 'restaurant',
     NIGHTLIFE = 'nightlife',
     CULTURE = 'culture',
+    SOLAR_PUNK = 'solar_punk',
+    CHARITY = 'charity',
     OTHER = 'other'
 }
 

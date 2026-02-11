@@ -6,10 +6,10 @@ Estos son los credenciales actuales configurados en el sistema.
 
 | Rol | Email | Contraseña | Notas |
 | :--- | :--- | :--- | :--- |
-| **Super Admin** | `admin@caribedigital.cr` | `CaribeMaximumSecurity2026!` | Acceso total, cuenta principal. |
-| **Dev Admin** | `admin@caribe.com` | `admin123` | Puede ser `tortuga123` si no se ha corrido el script de admin. |
+| **Super Admin** | `admin@caribe.com` | `tortuga123` | **Cuenta Activa y Verificada.** Generada automáticamente por el sistema. |
+| **Dev Admin** | `admin@caribedigital.cr` | -- | Pendiente de configuración. Usar la cuenta de arriba. |
 
-> **Nota:** Si `admin123` no funciona para el Dev Admin, intenta con `tortuga123`.
+> **Importante:** La cuenta `admin@caribe.com` tiene permisos totales y está lista para usar.
 
 ## 👥 Usuarios de Prueba (Seed)
 

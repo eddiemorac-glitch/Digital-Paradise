@@ -67,7 +67,29 @@ export const EventForm: React.FC<EventFormProps> = ({
     }, [event]);
 
     const handleChange = (field: keyof CreateEventDTO, value: any) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
+        setFormData(prev => {
+            const next = { ...prev, [field]: value };
+
+            // Auto-set category if type is chosen
+            if (field === 'type') {
+                const categoryMap: Record<string, string> = {
+                    'eco': 'solar_punk',
+                    'social': 'other',
+                    'concert': 'concert',
+                    'gastronomy': 'restaurant',
+                    'adventure': 'sport',
+                    'fire': 'other',
+                    'reggae': 'concert',
+                    'surf': 'sport',
+                    'art': 'culture'
+                };
+                if (categoryMap[value]) {
+                    next.category = categoryMap[value];
+                }
+            }
+
+            return next;
+        });
     };
 
     const handlePositionChange = (lat: number, lng: number) => {

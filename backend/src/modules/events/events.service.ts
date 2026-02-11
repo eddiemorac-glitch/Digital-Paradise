@@ -74,9 +74,17 @@ export class EventsService {
 
     async create(data: CreateEventDto): Promise<Event> {
         this.logger.log(`Creating event: ${data.title}`);
+        if (!data.category || data.category === EventCategory.OTHER) {
+            const mapped = Object.values(EventCategory).find(c => c === (data.type as any));
+            if (mapped) data.category = mapped as EventCategory;
+        }
+
         const event = this.eventRepository.create(data) as Event;
 
-
+        // Ensure we have a startDate for chronological queries if possible
+        if (!event.startDate) {
+            event.startDate = new Date();
+        }
 
         const saved = await this.eventRepository.save(event);
 

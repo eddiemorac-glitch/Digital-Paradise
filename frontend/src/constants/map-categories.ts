@@ -10,4 +10,5 @@ export const CATEGORIES: { id: EventCategory; label: string; icon: string }[] = 
     { id: 'WORKSHOP', label: 'Talleres', icon: '🎨' },
     { id: 'SOLAR_PUNK', label: 'Eco', icon: '🌿' },
     { id: 'CHARITY', label: 'Solidarios', icon: '🤝' },
+    { id: 'OTHER', label: 'Otros', icon: '📍' },
 ];
