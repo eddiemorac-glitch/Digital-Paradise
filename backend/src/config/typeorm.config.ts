@@ -34,6 +34,10 @@ if (process.env.DATABASE_URL) {
             },
         },
     };
+    console.log('Using MANUAL parsing for DATABASE_URL');
+    console.log('Hostname:', dbUrl.hostname);
+    console.log('SSL Config:', JSON.stringify(config.ssl));
+    console.log('Extra Config:', JSON.stringify(config.extra));
 } else {
     config = {
         type: 'postgres',
