@@ -7,8 +7,27 @@ import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { typeOrmConfig } from './config/typeorm.config';
+import { URL } from 'url';
 
 async function bootstrap() {
+    console.error('DEBUG: STARTING APP STARTUP SEQUENCE');
+    if (process.env.DATABASE_URL) {
+        try {
+            const dbUrl = new URL(process.env.DATABASE_URL);
+            console.error(`DEBUG: DATABASE_URL Hostname: ${dbUrl.hostname}`);
+            console.error(`DEBUG: TypeORM SSL Config: ${JSON.stringify((typeOrmConfig as any).ssl)}`);
+            console.error(`DEBUG: TypeORM Extra Config: ${JSON.stringify((typeOrmConfig as any).extra)}`);
+        } catch (e) {
+            console.error('DEBUG: Error parsing DATABASE_URL:', e);
+        }
+    } else {
+        console.error('DEBUG: NO DATABASE_URL environment variable found!');
+    }
+
+    // Force crash to ensure logs are seen before any async stuff swallows them
+    // throw new Error('DEBUG CRASH: INTENTIONAL CRASH TO REVEAL LOGS');
+
     const useEmergencyMode = process.env.EMERGENCY_MODE === 'true';
 
     const app = await NestFactory.create<NestExpressApplication>(
