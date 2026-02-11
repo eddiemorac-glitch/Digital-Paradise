@@ -97,7 +97,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                 animate={{ scale: 1, y: 0 }}
                 exit={{ scale: 0.9, y: 20 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-[#0a1015] border border-white/10 rounded-[2.5rem] p-8"
+                className="w-full max-w-2xl max-h-[85vh] overflow-y-auto bg-[#0a1015] border border-white/10 rounded-[2.5rem] p-8 pb-12"
             >
                 <div className="flex items-center justify-between mb-8">
                     <div>
