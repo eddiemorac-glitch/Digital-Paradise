@@ -7,8 +7,27 @@ import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
+import { typeOrmConfig } from './config/typeorm.config';
 
 async function bootstrap() {
+    // BOOTSTRAP: Ensure PostGIS extension exists before TypeORM syncs entities
+    try {
+        console.log('PostGIS Bootstrap: Connecting to database to ensure extensions...');
+        const ds = new DataSource({
+            ...(typeOrmConfig as any),
+            synchronize: false, // Don't sync yet, we just want the extension
+            migrationsRun: false,
+        });
+        await ds.initialize();
+        await ds.query('CREATE EXTENSION IF NOT EXISTS postgis;');
+        console.log('PostGIS Bootstrap: Extension verified/created successfully.');
+        await ds.destroy();
+    } catch (error) {
+        console.error('PostGIS Bootstrap Error:', error.message);
+        // We don't exit here; let the main app try to start anyway
+    }
+
     const useEmergencyMode = process.env.EMERGENCY_MODE === 'true';
 
     const app = await NestFactory.create<NestExpressApplication>(
