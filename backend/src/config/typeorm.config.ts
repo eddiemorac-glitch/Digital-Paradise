@@ -14,7 +14,11 @@ export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
         subscribers,
         synchronize,
         logging,
-        ssl: { rejectUnauthorized: false },
+        extra: {
+            ssl: {
+                rejectUnauthorized: false,
+            },
+        },
     }
     : {
         type: 'postgres',
