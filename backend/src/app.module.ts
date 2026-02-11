@@ -57,6 +57,12 @@ import 'winston-daily-rotate-file';
                 // FORCE SYNC: Default to true if not explicitly false to fix missing tables
                 synchronize: configService.get('DB_SYNC') !== 'false',
                 logging: configService.get('NODE_ENV') !== 'production',
+                // SERVERLESS OPTIMIZATION: Connection Pooling & Timezone
+                extra: {
+                    max: configService.get('DB_POOL_SIZE') || 20, // Limit connections for Render
+                    connectionTimeoutMillis: 5000,
+                },
+                timezone: 'America/Costa_Rica', // Force local time for DB operations
                 ...(configService.get('NODE_ENV') === 'production' && {
                     ssl: { rejectUnauthorized: false },
                 }),

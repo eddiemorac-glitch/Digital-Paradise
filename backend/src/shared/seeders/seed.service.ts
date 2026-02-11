@@ -281,6 +281,8 @@ export class SeedService implements OnApplicationBootstrap {
                     merchantId: merchant.id
                 });
                 console.log(`   + Created product: ${p.name}`);
+            } else {
+                // console.log(`   . Skipped existing: ${p.name}`);
             }
         }
     }
