@@ -2,9 +2,14 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 
+const isVercel = window.location.hostname.includes('vercel.app');
+const baseURL = isVercel ? '/api' : (import.meta.env.VITE_API_URL || '/api');
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || '/api',
+    baseURL,
 });
+
+console.log('🔌 API Base URL:', baseURL);
 
 // Add a request interceptor to add the auth token to headers
 api.interceptors.request.use(
