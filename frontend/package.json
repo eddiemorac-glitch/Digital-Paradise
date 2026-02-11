@@ -39,7 +39,9 @@
             "react-dom": "$react-dom"
         },
         "react-leaflet-cluster": {
-            "react-leaflet": "$react-leaflet"
+            "react-leaflet": "$react-leaflet",
+            "react": "$react",
+            "react-dom": "$react-dom"
         }
     },
     "devDependencies": {
