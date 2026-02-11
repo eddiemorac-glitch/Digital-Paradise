@@ -1,4 +1,4 @@
-import api from './api';
+import api, { API_BASE_URL } from './api';
 
 export interface ChatResponse {
     text: string;
@@ -19,7 +19,7 @@ export const cocoAiApi = {
             headers['Authorization'] = `Bearer ${token}`;
         }
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/coco-ai/chat-stream`, {
+        const response = await fetch(`${API_BASE_URL}/coco-ai/chat-stream`, {
             method: 'POST',
             headers,
             body: JSON.stringify({ message })

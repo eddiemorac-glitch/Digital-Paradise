@@ -3,7 +3,8 @@ import { useAuthStore } from '../store/authStore';
 import { useNotificationStore } from '../store/notificationStore';
 
 const isVercel = window.location.hostname.includes('vercel.app');
-const baseURL = isVercel ? '/api' : (import.meta.env.VITE_API_URL || '/api');
+export const API_BASE_URL = isVercel ? '/api' : (import.meta.env.VITE_API_URL || '/api');
+const baseURL = API_BASE_URL;
 
 const api = axios.create({
     baseURL,

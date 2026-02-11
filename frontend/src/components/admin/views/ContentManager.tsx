@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { blogApi, BlogPost } from '../../../api/blog';
+import { API_BASE_URL } from '../../../api/api';
 import { toast } from 'sonner';
 
 export const ContentManager: React.FC = () => {
@@ -282,7 +283,7 @@ export const ContentManager: React.FC = () => {
                                                             // Temporary direct fetch call until api wrapper is updated
                                                             try {
                                                                 const token = localStorage.getItem('token');
-                                                                const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
+                                                                const apiBase = API_BASE_URL.replace(/\/api$/, '');
                                                                 const res = await fetch(`${apiBase}/uploads/blog-image`, {
                                                                     method: 'POST',
                                                                     headers: {

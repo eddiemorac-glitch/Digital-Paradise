@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Archive, Calendar, Clock, Package, RefreshCw, ArrowLeft, MessageSquare, Star, MapPinned, Navigation, FileText, Ticket } from 'lucide-react';
 import { orderApi } from '../api/orders';
+import { API_BASE_URL } from '../api/api';
 import { socketService } from '../api/socket';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -266,7 +267,7 @@ export const MyOrders = ({ onBack, onSelectOrder }: MyOrdersProps) => {
                                 {/* Order Actions Toolbar */}
                                 <div className="mt-4 flex flex-wrap gap-2">
                                     <button
-                                        onClick={() => handleDownload(`${import.meta.env.VITE_API_URL}/orders/${order.id}/invoice`, `factura-${order.id.slice(0, 8)}.pdf`)}
+                                        onClick={() => handleDownload(`${API_BASE_URL}/orders/${order.id}/invoice`, `factura-${order.id.slice(0, 8)}.pdf`)}
                                         className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest text-white/60 hover:text-white hover:bg-white/10 transition-all touch-target"
                                     >
                                         <FileText size={12} />
@@ -276,7 +277,7 @@ export const MyOrders = ({ onBack, onSelectOrder }: MyOrdersProps) => {
                                     {order.items?.some((i: any) => i.eventId) && order.items.filter((i: any) => i.eventId).map((item: any) => (
                                         <button
                                             key={item.id}
-                                            onClick={() => handleDownload(`${import.meta.env.VITE_API_URL}/orders/${order.id}/ticket/${item.eventId}`, `ticket-${item.eventId.slice(0, 8)}.pdf`)}
+                                            onClick={() => handleDownload(`${API_BASE_URL}/orders/${order.id}/ticket/${item.eventId}`, `ticket-${item.eventId.slice(0, 8)}.pdf`)}
                                             className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-[9px] font-black uppercase tracking-widest text-primary hover:bg-primary/20 transition-all touch-target"
                                         >
                                             <Ticket size={12} />
