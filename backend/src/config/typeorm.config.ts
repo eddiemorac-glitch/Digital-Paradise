@@ -10,6 +10,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = {
     database: process.env.DB_NAME || 'caribe_digital',
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     subscribers: [UserLocationSubscriber],
-    synchronize: process.env.NODE_ENV !== 'production',
-    logging: process.env.NODE_ENV !== 'production',
+    synchronize: process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true',
+    logging: process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true',
 };
