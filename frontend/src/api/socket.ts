@@ -3,10 +3,7 @@ import { pushNotificationService } from '../services/pushNotificationService';
 import { useTrackingStore } from '../store/trackingStore';
 import { devLog, devWarn, devError } from '../utils/devLog';
 
-const isVercel = window.location.hostname.includes('vercel.app');
-const SOCKET_URL = isVercel
-    ? window.location.origin
-    : (import.meta.env.VITE_API_URL || '').replace(/\/api$/, '') || window.location.origin;
+const SOCKET_URL = (import.meta.env.VITE_API_URL || 'https://digital-paradise.onrender.com').replace(/\/api$/, '');
 
 devLog('🔌 Socket Target:', SOCKET_URL);
 
