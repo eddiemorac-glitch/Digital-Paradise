@@ -7,33 +7,18 @@ const subscribers = [UserLocationSubscriber];
 const synchronize = process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true';
 const logging = process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true';
 
-const getDecomposedConfig = (dbUrl: string): any => {
-    try {
-        const parsed = new URL(dbUrl);
-        return {
-            host: parsed.hostname,
-            port: parseInt(parsed.port || '5432'),
-            username: parsed.username,
-            password: decodeURIComponent(parsed.password),
-            database: parsed.pathname.slice(1),
-            ssl: {
-                rejectUnauthorized: false,
-                servername: parsed.hostname,
-            },
-        };
-    } catch (e) {
-        return { url: dbUrl, ssl: { rejectUnauthorized: false } };
-    }
-};
-
+// Standard Render configuration
 export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
     ? {
         type: 'postgres',
-        ...getDecomposedConfig(process.env.DATABASE_URL),
+        url: process.env.DATABASE_URL,
         entities,
         subscribers,
-        synchronize,
+        synchronize: true, // Force sync to fix missing tables
         logging,
+        ssl: {
+            rejectUnauthorized: false,
+        },
     }
     : {
         type: 'postgres',
@@ -44,7 +29,7 @@ export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
         database: process.env.DB_NAME || 'caribe_digital',
         entities,
         subscribers,
-        synchronize,
+        synchronize: true, // Force sync local
         logging,
         ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     };
