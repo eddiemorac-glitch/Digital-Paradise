@@ -8,26 +8,34 @@ const subscribers = [UserLocationSubscriber];
 const synchronize = process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true';
 const logging = process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true';
 
-// Standard Render configuration
-export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
-    ? {
+let config: TypeOrmModuleOptions;
+
+if (process.env.DATABASE_URL) {
+    const dbUrl = new URL(process.env.DATABASE_URL);
+    config = {
         type: 'postgres',
-        url: process.env.DATABASE_URL,
+        host: dbUrl.hostname,
+        port: parseInt(dbUrl.port || '5432'),
+        username: dbUrl.username,
+        password: dbUrl.password,
+        database: dbUrl.pathname.slice(1), // Remove leading slash
         entities,
         subscribers,
         synchronize: true, // Force sync to fix missing tables
         logging,
         ssl: {
-            rejectUnauthorized: false,
-        },
+            rejectUnauthorized: false, // Required for Render
+            servername: dbUrl.hostname, // SNI Requirement
+        } as any, // Cast to any to avoid TlsOptions type error
         extra: {
             ssl: {
                 rejectUnauthorized: false,
-                servername: new URL(process.env.DATABASE_URL).hostname,
+                servername: dbUrl.hostname,
             },
         },
-    }
-    : {
+    };
+} else {
+    config = {
         type: 'postgres',
         host: process.env.DB_HOST || 'localhost',
         port: parseInt(process.env.DB_PORT || '5432'),
@@ -40,3 +48,6 @@ export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
         logging,
         ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     };
+}
+
+export const typeOrmConfig = config;
