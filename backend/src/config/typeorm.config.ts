@@ -7,7 +7,7 @@ const subscribers = [UserLocationSubscriber];
 const synchronize = process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true';
 const logging = process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true';
 
-const getDecomposedConfig = (dbUrl: string): Partial<TypeOrmModuleOptions> => {
+const getDecomposedConfig = (dbUrl: string): any => {
     try {
         const parsed = new URL(dbUrl);
         return {
