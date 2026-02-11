@@ -3,7 +3,7 @@ import { pushNotificationService } from '../services/pushNotificationService';
 import { useTrackingStore } from '../store/trackingStore';
 import { devLog, devWarn, devError } from '../utils/devLog';
 
-const SOCKET_URL = window.location.origin;
+const SOCKET_URL = (import.meta.env.VITE_API_URL || '').replace(/\/api$/, '') || window.location.origin;
 
 class SocketService {
     private socket: Socket | null = null;

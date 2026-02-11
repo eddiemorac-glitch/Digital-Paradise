@@ -6,11 +6,20 @@ import { pushNotificationService } from '../services/pushNotificationService';
 
 interface PushNotificationPromptProps {
     delay?: number; // ms to wait before showing prompt
+    blocked?: boolean;
+    onOpen?: () => void;
+    onClose?: () => void;
 }
 
-export const PushNotificationPrompt = ({ delay = 10000 }: PushNotificationPromptProps) => {
+export const PushNotificationPrompt = ({
+    delay = 10000,
+    blocked = false,
+    onOpen,
+    onClose
+}: PushNotificationPromptProps) => {
     const [show, setShow] = useState(false);
     const [dismissed, setDismissed] = useState(false);
+    const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
         // Check if already granted or denied
@@ -22,14 +31,23 @@ export const PushNotificationPrompt = ({ delay = 10000 }: PushNotificationPrompt
         if (hasDismissed) return;
 
         // Show prompt after delay
-        const timer = setTimeout(() => setShow(true), delay);
+        const timer = setTimeout(() => setIsReady(true), delay);
         return () => clearTimeout(timer);
     }, [delay]);
+
+    // Effect to handle showing when ready and not blocked
+    useEffect(() => {
+        if (isReady && !blocked && !show && !dismissed) {
+            setShow(true);
+            onOpen?.();
+        }
+    }, [isReady, blocked, show, dismissed, onOpen]);
 
     const handleEnable = async () => {
         const granted = await socketService.enablePushNotifications();
         if (granted) {
             setShow(false);
+            onClose?.();
             // Show a test notification
             pushNotificationService.show({
                 title: '🎉 Notificaciones Activadas',
@@ -43,6 +61,7 @@ export const PushNotificationPrompt = ({ delay = 10000 }: PushNotificationPrompt
         setShow(false);
         setDismissed(true);
         localStorage.setItem('push_notification_dismissed', 'true');
+        onClose?.();
     };
 
     if (dismissed || !show) return null;
@@ -53,7 +72,7 @@ export const PushNotificationPrompt = ({ delay = 10000 }: PushNotificationPrompt
                 initial={{ opacity: 0, y: 50, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[200]"
+                className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[9500]"
             >
                 <div className="glass border border-white/10 rounded-[2rem] p-6 shadow-2xl">
                     <div className="flex gap-4 items-start">

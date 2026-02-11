@@ -65,7 +65,7 @@ export const SWUpdatePrompt = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 60, scale: 0.9 }}
                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                    className="fixed bottom-24 left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[250]"
+                    className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[9500]"
                 >
                     <div className="glass border border-primary/20 rounded-2xl p-4 shadow-2xl relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-secondary to-primary" />

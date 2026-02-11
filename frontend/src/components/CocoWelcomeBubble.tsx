@@ -45,7 +45,7 @@ export const CocoWelcomeBubble = ({ onOpenChat }: { onOpenChat: () => void }) =>
                 initial={{ opacity: 0, scale: 0.8, y: 20, x: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                 exit={{ opacity: 0, scale: 0.8, y: 20, x: 20 }}
-                className="fixed bottom-48 left-8 z-[9005] max-w-[280px]"
+                className="fixed bottom-[160px] left-4 z-[9005] max-w-[280px]"
             >
                 <div className="glass p-6 rounded-[2rem] border-primary/20 shadow-2xl relative overflow-hidden group">
                     <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />

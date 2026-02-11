@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/api/(.*)",
+            "destination": "https://digital-paradise.onrender.com/api/$1"
+        },
+        {
+            "source": "/socket.io/(.*)",
+            "destination": "https://digital-paradise.onrender.com/socket.io/$1"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

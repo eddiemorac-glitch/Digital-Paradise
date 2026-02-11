@@ -4,7 +4,7 @@ import { Download, X, Smartphone } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { devLog } from '../utils/devLog';
 
-export const PWAInstallPrompt = () => {
+export const PWAInstallPrompt = ({ onOpen, onClose }: { onOpen?: () => void; onClose?: () => void }) => {
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
     const [showPrompt, setShowPrompt] = useState(false);
     const { user } = useAuthStore();
@@ -20,7 +20,10 @@ export const PWAInstallPrompt = () => {
             const hasDismissed = localStorage.getItem('pwa_install_dismissed');
             if (!hasDismissed) {
                 // Delay slightly for better UX
-                setTimeout(() => setShowPrompt(true), 3000);
+                setTimeout(() => {
+                    setShowPrompt(true);
+                    onOpen?.();
+                }, 3000);
             }
         };
 
@@ -46,11 +49,13 @@ export const PWAInstallPrompt = () => {
 
         setDeferredPrompt(null);
         setShowPrompt(false);
+        onClose?.();
     };
 
     const handleDismiss = () => {
         setShowPrompt(false);
         localStorage.setItem('pwa_install_dismissed', 'true');
+        onClose?.();
     };
 
     // If already installed (standalone mode), don't show
@@ -66,7 +71,7 @@ export const PWAInstallPrompt = () => {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
-                className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[200]"
+                className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[9500]"
             >
                 <div className="glass border border-white/10 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden group">
                     <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10" />
