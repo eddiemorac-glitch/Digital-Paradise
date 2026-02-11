@@ -1,10 +1,24 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { UserLocationSubscriber } from '../modules/users/subscribers/user-location.subscriber';
+import { URL } from 'url';
 
 const entities = [__dirname + '/../**/*.entity{.ts,.js}'];
 const subscribers = [UserLocationSubscriber];
 const synchronize = process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true';
 const logging = process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true';
+
+const getSslConfig = (dbUrl?: string) => {
+    if (!dbUrl) return undefined;
+    try {
+        const parsed = new URL(dbUrl);
+        return {
+            rejectUnauthorized: false,
+            servername: parsed.hostname,
+        };
+    } catch (e) {
+        return { rejectUnauthorized: false };
+    }
+};
 
 export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
     ? {
@@ -14,10 +28,9 @@ export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
         subscribers,
         synchronize,
         logging,
+        ssl: true,
         extra: {
-            ssl: {
-                rejectUnauthorized: false,
-            },
+            ssl: getSslConfig(process.env.DATABASE_URL),
         },
     }
     : {
