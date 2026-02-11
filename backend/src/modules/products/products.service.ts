@@ -68,6 +68,12 @@ export class ProductsService {
             .getMany();
     }
 
+    async findOneByNameAndMerchant(name: string, merchantId: string): Promise<Product> {
+        return await this.productRepository.findOne({
+            where: { name, merchantId }
+        });
+    }
+
     async findOne(id: string): Promise<Product> {
         const product = await this.productRepository.findOne({ where: { id } });
         if (!product) {

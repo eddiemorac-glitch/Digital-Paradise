@@ -272,10 +272,16 @@ export class SeedService implements OnApplicationBootstrap {
         }
 
         for (const p of products) {
-            await this.productsService.create({
-                ...p,
-                merchantId: merchant.id
-            });
+            // CRITICAL FIX: Check for existence to prevent duplicates on restart
+            const existingProduct = await this.productsService.findOneByNameAndMerchant(p.name, merchant.id).catch(() => null);
+
+            if (!existingProduct) {
+                await this.productsService.create({
+                    ...p,
+                    merchantId: merchant.id
+                });
+                console.log(`   + Created product: ${p.name}`);
+            }
         }
     }
 
