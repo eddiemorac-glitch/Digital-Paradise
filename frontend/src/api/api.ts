@@ -64,7 +64,9 @@ api.interceptors.response.use(
 
             if (refreshToken) {
                 try {
-                    const response = await axios.post(`${api.defaults.baseURL}/auth/refresh`, {
+                    // Use a clean URL to avoid double-prefixing or path issues
+                    const refreshUrl = `${window.location.origin}${API_BASE_URL}/auth/refresh`;
+                    const response = await axios.post(refreshUrl, {
                         refresh_token: refreshToken,
                     });
 

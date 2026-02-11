@@ -69,13 +69,22 @@ export const useTacticalMap = ({
         if (!mapRef.current) return;
         const controller = new AbortController();
 
+        let retries = 0;
+        const maxRetries = 10;
+
         const fetchEvents = async () => {
             if (!mapRef.current) return;
             const map = mapRef.current;
 
             // Ensure map has a size and projection ready
             if (!map.getContainer().clientHeight || !map.getBounds() || !map.getBounds().isValid()) {
-                setTimeout(fetchEvents, 200); // Retry soon
+                if (retries < maxRetries) {
+                    retries++;
+                    setTimeout(fetchEvents, 300); // Retry soon
+                } else {
+                    devLog("Tactical Orchestrator: Map projection not ready after max retries.");
+                    setIsLoading(false);
+                }
                 return;
             }
 

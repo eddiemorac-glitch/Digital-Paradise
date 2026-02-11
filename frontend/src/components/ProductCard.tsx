@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { useState } from 'react';
-import { ShoppingBag, Star, Check, Sparkles, Leaf } from 'lucide-react';
+import { Star, Sparkles, Leaf, Zap } from 'lucide-react';
 import { Product } from '../api/products';
 import { useLanguageStore } from '../store/languageStore';
 import { useAddToCart } from '../hooks/useAddToCart';
@@ -107,32 +107,22 @@ export const ProductCard = ({ product, isMerchantUnavailable }: ProductCardProps
                     <Button
                         onClick={handleAddToCartClick}
                         variant={isDisabled ? 'glass' : (isAdded ? 'primary' : 'glass')}
-                        className={`w-full h-16 rounded-2xl ${isDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        isLoading={false}
+                        className={`w-full h-14 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${isAdded ? 'bg-primary text-background' : ''}`}
                         disabled={isDisabled}
                     >
-                        <span className="flex items-center gap-3">
-                            {isDisabled ? (
-                                <>
-                                    {language === 'es' ? 'NO DISPONIBLE' : 'NOT AVAILABLE'}
-                                </>
-                            ) : (
-                                isAdded ? (
-                                    <>
-                                        <Check size={18} />
-                                        {language === 'es' ? 'AGREGADO' : 'ADDED'}
-                                    </>
-                                ) : (
-                                    <>
-                                        <ShoppingBag size={18} />
-                                        {language === 'es' ? 'ORDENAR AHORA' : 'ORDER NOW'}
-                                    </>
-                                )
-                            )}
-                        </span>
+                        {isAdded ? (
+                            <span className="flex items-center gap-2">
+                                {language === 'es' ? 'AGREGADO' : 'ADDED'}
+                                <Zap size={14} className="fill-current" />
+                            </span>
+                        ) : isDisabled ? (
+                            isMerchantUnavailable ? (language === 'es' ? 'LOCAL CERRADO' : 'CLOSED') : (language === 'es' ? 'AGOTADO' : 'SOLD OUT')
+                        ) : (
+                            language === 'es' ? 'ORDENAR AHORA' : 'ORDER NOW'
+                        )}
                     </Button>
                 </motion.div>
-            </CardContent>
+            </CardContent >
 
             <MerchantConflictModal
                 isOpen={showConflictModal}
@@ -141,6 +131,6 @@ export const ProductCard = ({ product, isMerchantUnavailable }: ProductCardProps
                 currentMerchantName={currentMerchantName}
                 newMerchantName={newMerchantName}
             />
-        </Card>
+        </Card >
     );
 };

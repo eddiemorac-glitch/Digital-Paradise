@@ -15,7 +15,7 @@ export const ProtectedRoute = ({ children, requireAdmin = false }: ProtectedRout
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 
-    if (requireAdmin && user?.role !== 'ADMIN') {
+    if (requireAdmin && user?.role?.toUpperCase() !== 'ADMIN') {
         // Redirect to home if admin role is required but user is not admin
         return <Navigate to="/" replace />;
     }
