@@ -21,7 +21,7 @@ class SocketService {
             this.socket = io(SOCKET_URL, {
                 auth: { token },
                 reconnection: true,
-                reconnectionAttempts: 5,
+                reconnectionAttempts: Infinity,
                 reconnectionDelay: 1000
             });
 

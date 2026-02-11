@@ -37,7 +37,7 @@ export const MyOrders = ({ onBack, onSelectOrder }: MyOrdersProps) => {
 
     const handleDownload = async (url: string, filename: string) => {
         try {
-            const token = localStorage.getItem('auth_token'); // Or wherever you store it
+            const token = localStorage.getItem('token'); // Fixed key to match authStore
             const response = await fetch(url, {
                 headers: {
                     'Authorization': `Bearer ${token}`
