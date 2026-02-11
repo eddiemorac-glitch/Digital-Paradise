@@ -7,31 +7,33 @@ const subscribers = [UserLocationSubscriber];
 const synchronize = process.env.NODE_ENV !== 'production' || process.env.DB_SYNCHRONIZE === 'true';
 const logging = process.env.NODE_ENV !== 'production' || process.env.DB_LOGGING === 'true';
 
-const getSslConfig = (dbUrl?: string) => {
-    if (!dbUrl) return undefined;
+const getDecomposedConfig = (dbUrl: string): Partial<TypeOrmModuleOptions> => {
     try {
         const parsed = new URL(dbUrl);
         return {
-            rejectUnauthorized: false,
-            servername: parsed.hostname,
+            host: parsed.hostname,
+            port: parseInt(parsed.port || '5432'),
+            username: parsed.username,
+            password: decodeURIComponent(parsed.password),
+            database: parsed.pathname.slice(1),
+            ssl: {
+                rejectUnauthorized: false,
+                servername: parsed.hostname,
+            },
         };
     } catch (e) {
-        return { rejectUnauthorized: false };
+        return { url: dbUrl, ssl: { rejectUnauthorized: false } };
     }
 };
 
 export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
     ? {
         type: 'postgres',
-        url: process.env.DATABASE_URL,
+        ...getDecomposedConfig(process.env.DATABASE_URL),
         entities,
         subscribers,
         synchronize,
         logging,
-        ssl: true,
-        extra: {
-            ssl: getSslConfig(process.env.DATABASE_URL),
-        },
     }
     : {
         type: 'postgres',
