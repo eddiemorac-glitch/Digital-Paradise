@@ -42,8 +42,9 @@ export class EmailsService {
     }
 
     async sendVerificationEmail(to: string, name: string, token: string) {
-        const baseUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
-        const verifyUrl = `${baseUrl}/verify-email?token=${token}`;
+        // CRITICAL: Production URL enforcement
+        const baseUrl = this.configService.get<string>('FRONTEND_URL') || 'https://digital-paradise-v2.vercel.app';
+        const verifyUrl = `${baseUrl}/verify?token=${token}`;
 
         const subject = 'Verifica tu cuenta - DIGITAL PARADISE';
         const html = `

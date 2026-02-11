@@ -63,12 +63,13 @@ export class UploadsController {
     uploadProductImage(@UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('File is required');
 
-        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+        const baseUrl = process.env.BACKEND_URL || 'https://digital-paradise.onrender.com';
         return {
             url: `${baseUrl}/uploads/products/${file.filename}`,
             filename: file.filename
         };
     }
+
     @Post('merchant-image')
     @UseGuards(JwtAuthGuard)
     @UseInterceptors(FileInterceptor('file', {
@@ -91,7 +92,7 @@ export class UploadsController {
     uploadMerchantImage(@UploadedFile() file: Express.Multer.File) {
         if (!file) throw new BadRequestException('File is required');
 
-        const baseUrl = process.env.BACKEND_URL || 'http://localhost:3001';
+        const baseUrl = process.env.BACKEND_URL || 'https://digital-paradise.onrender.com';
         return {
             url: `${baseUrl}/uploads/merchants/${file.filename}`,
             filename: file.filename
