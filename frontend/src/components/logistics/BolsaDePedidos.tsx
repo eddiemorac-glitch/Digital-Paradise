@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Zap, MapPin } from 'lucide-react';
+import { Mission } from '../../types/logistics';
 
 interface BolsaDePedidosProps {
-    availableOrders: any[];
+    availableOrders: Mission[];
     onClaimMission: (id: string) => void;
     isClaiming: boolean;
     language?: string;
@@ -32,7 +33,7 @@ export const BolsaDePedidos: React.FC<BolsaDePedidosProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <AnimatePresence mode="popLayout">
-                    {availableOrders.map((mission: any) => (
+                    {availableOrders.map((mission: Mission) => (
                         <motion.div
                             key={mission.id}
                             initial={{ opacity: 0, scale: 0.9 }}

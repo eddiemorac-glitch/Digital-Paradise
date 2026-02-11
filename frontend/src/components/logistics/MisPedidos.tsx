@@ -1,14 +1,15 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, Bike, Package, MessageSquare, MapPin, Navigation, ChevronRight, CheckCircle2, ThermometerSun, AlertTriangle, DollarSign, Route } from 'lucide-react';
+import { Mission } from '../../types/logistics';
 import { getStatusConfig } from '../../utils/statusMapping';
 
 interface MisPedidosProps {
-    activeMissions: any[];
-    onOpenChat: (mission: any) => void;
+    activeMissions: Mission[];
+    onOpenChat: (mission: Mission) => void;
     onLaunchMaps: (lat: number, lng: number) => void;
     onUpdateStatus: (id: string, status: string, isFood: boolean) => void;
-    onConfirmDelivery: (mission: any) => void;
+    onConfirmDelivery: (mission: Mission) => void;
     language?: string;
 }
 
@@ -33,7 +34,7 @@ export const MisPedidos: React.FC<MisPedidosProps> = ({
             </div>
 
             <AnimatePresence mode="popLayout">
-                {activeMissions.map((mission: any) => (
+                {activeMissions.map((mission: Mission) => (
                     <motion.div
                         key={mission.id}
                         layout

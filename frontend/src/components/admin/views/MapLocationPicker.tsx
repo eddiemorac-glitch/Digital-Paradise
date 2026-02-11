@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Navigation, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 interface MapLocationPickerProps {
     initialPosition?: [number, number];
@@ -129,6 +130,7 @@ export const MapLocationPicker: React.FC<MapLocationPickerProps> = ({
             }
         } catch (error) {
             console.error('Geocoding error:', error);
+            toast.error('No se pudo encontrar la ubicación');
         }
     };
 

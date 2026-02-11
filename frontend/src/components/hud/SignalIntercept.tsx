@@ -80,30 +80,40 @@ export const SignalIntercept: React.FC = () => {
         }
     };
 
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current) clearInterval(intervalRef.current);
+        };
+    }, []);
+
     const processNextSignal = async (signal: Signal) => {
         processingRef.current = true;
         setCurrentSignal(signal);
         playTacticalSound('BEEP');
 
-        // Decode Animation
         let iterations = 0;
         const originalText = signal.text;
 
-        const interval = setInterval(() => {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+
+        intervalRef.current = setInterval(() => {
             setDisplayText(originalText.split('').map((_, index) => {
                 if (index < iterations) return originalText[index];
                 return DECODE_CHARS[Math.floor(Math.random() * DECODE_CHARS.length)];
             }).join(''));
 
-            iterations += 1 / 2; // Speed control
+            iterations += 1 / 2;
 
             if (iterations >= originalText.length) {
-                clearInterval(interval);
+                if (intervalRef.current) clearInterval(intervalRef.current);
                 setDisplayText(originalText);
                 setTimeout(() => {
                     setCurrentSignal(null);
                     processingRef.current = false;
-                }, 3000); // Show for 3s
+                }, 3000);
             }
         }, 30);
     };
