@@ -19,6 +19,12 @@ export const typeOrmConfig: TypeOrmModuleOptions = process.env.DATABASE_URL
         ssl: {
             rejectUnauthorized: false,
         },
+        extra: {
+            ssl: {
+                rejectUnauthorized: false,
+                servername: new URL(process.env.DATABASE_URL).hostname,
+            },
+        },
     }
     : {
         type: 'postgres',
