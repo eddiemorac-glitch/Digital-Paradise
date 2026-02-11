@@ -78,6 +78,11 @@ export class MerchantsController {
         return this.merchantsService.findAll(status, category, sortBy, lat, lng, sustainableFilter, activeFilter);
     }
 
+    @Get('radar')
+    getRadar() {
+        return this.merchantsService.radar();
+    }
+
     @Get('nearby')
     findNearby(
         @Query('lat') lat: string,

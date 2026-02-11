@@ -112,6 +112,13 @@ export class MerchantsService {
         return merchant;
     }
 
+    async radar(): Promise<any[]> {
+        return this.merchantRepository.find({
+            where: { isActive: true, status: MerchantStatus.ACTIVE },
+            select: ['id', 'name', 'latitude', 'longitude', 'category', 'isSustainable']
+        });
+    }
+
     async findNearby(lat: number, lng: number, radiusKm: number): Promise<MerchantResponseDto[]> {
         const radiusMeters = radiusKm * 1000; // Convert km to meters
 
