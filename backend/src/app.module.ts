@@ -54,7 +54,8 @@ import 'winston-daily-rotate-file';
                 entities: [join(__dirname, '**', '*.entity{.ts,.js}')],
                 autoLoadEntities: true,
                 subscribers: [UserLocationSubscriber, MerchantLocationSubscriber],
-                synchronize: configService.get('DB_SYNC') === 'true' || configService.get('NODE_ENV') !== 'production',
+                // FORCE SYNC: Default to true if not explicitly false to fix missing tables
+                synchronize: configService.get('DB_SYNC') !== 'false',
                 logging: configService.get('NODE_ENV') !== 'production',
                 ...(configService.get('NODE_ENV') === 'production' && {
                     ssl: { rejectUnauthorized: false },
