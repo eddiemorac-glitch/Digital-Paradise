@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Bell, Bot, Shield } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query'; // Import useQuery
@@ -21,7 +21,6 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
     const { t, language, setLanguage } = useLanguageStore();
     const { user } = useAuthStore();
     const navigate = useNavigate();
-    const location = useLocation();
 
     // Fetch profile locally for points/avatar
     const { data: profile } = useQuery({
@@ -97,7 +96,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                         playTacticalSound('CLICK');
                         navigate('/map');
                     }}
-                    className="bg-tactical-events px-4 sm:px-6 py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap hidden lg:flex items-center justify-center"
+                    className="bg-tactical-events px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap flex items-center justify-center mr-2"
                 >
                     {t('events')}
                 </motion.button>
