@@ -273,7 +273,7 @@ export const HomePage = () => {
                                     <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80 animate-pulse">{t('loading')}</p>
                                 </div>
                             ) : isError ? (
-                                <div className="glass-morphism py-20 text-center max-w-lg mx-auto border-red-500/20 bg-red-500/5">
+                                <div className="glass-morphism py-12 md:py-20 text-center max-w-lg mx-auto border-red-500/20 bg-red-500/5">
                                     <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <X className="text-red-500" size={32} />
                                     </div>
@@ -330,13 +330,13 @@ export const HomePage = () => {
                                 </div>
                             )}
 
-                            {!isLoading && filteredMerchants?.length === 0 && (
-                                <div className="glass-morphism py-32 text-center max-w-2xl mx-auto border-dashed border-white/10">
-                                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                            {!isLoading && !isError && filteredMerchants?.length === 0 && (
+                                <div className="glass-morphism py-12 md:py-20 text-center max-w-2xl mx-auto border-dashed border-white/10">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                                         <Search className="text-white/20" size={32} />
                                     </div>
-                                    <h3 className="text-2xl font-bold mb-2 text-white/80">No se encontraron resultados</h3>
-                                    <p className="text-white/40 mb-8">Intenta con otra categoría o término de búsqueda</p>
+                                    <h3 className="text-xl md:text-2xl font-bold mb-2 text-white/80">No se encontraron resultados</h3>
+                                    <p className="text-white/40 mb-8 text-sm md:text-base">Intenta con otra categoría o término de búsqueda</p>
                                     <Button
                                         variant="glass"
                                         onClick={() => { setSearchQuery(''); setSelectedCategory(undefined); }}

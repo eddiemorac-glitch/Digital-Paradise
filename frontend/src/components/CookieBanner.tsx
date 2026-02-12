@@ -24,9 +24,9 @@ export const CookieBanner: React.FC = () => {
                     initial={{ y: 100, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     exit={{ y: 100, opacity: 0 }}
-                    className="fixed bottom-24 left-6 right-6 z-[100] max-w-lg mx-auto"
+                    className="fixed bottom-0 left-0 right-0 md:bottom-24 md:left-6 md:right-6 md:max-w-lg md:mx-auto z-[100]"
                 >
-                    <div className="glass p-6 rounded-[2rem] border-primary/20 flex items-center gap-6 shadow-2xl">
+                    <div className="glass p-6 rounded-t-[2rem] md:rounded-[2rem] border-primary/20 flex flex-col md:flex-row items-center gap-6 shadow-2xl">
                         <div className="bg-primary/10 p-4 rounded-2xl">
                             <ShieldCheck className="w-6 h-6 text-primary" />
                         </div>
