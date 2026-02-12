@@ -1,11 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, Inject, forwardRef } from '@nestjs/common';
+import { OnEvent } from '@nestjs/event-emitter';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Order } from '../orders/entities/order.entity';
 import { HaciendaAuthService } from './hacienda-auth.service';
 import { HaciendaXmlService } from './hacienda-xml.service';
+import { OrdersService } from '../orders/orders.service';
 import { TaxIdType } from '../../shared/enums/tax-id-type.enum';
 import { CircuitBreaker } from '../../shared/utils/circuit-breaker.util';
+import { OrderPaidEvent } from '../orders/events/order-paid.event';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
+import { HaciendaSequence } from './entities/hacienda-sequence.entity';
 
 @Injectable()
 export class HaciendaService {
@@ -17,7 +23,12 @@ export class HaciendaService {
     constructor(
         private configService: ConfigService,
         private authService: HaciendaAuthService,
-        private xmlService: HaciendaXmlService
+        private xmlService: HaciendaXmlService,
+        @InjectRepository(HaciendaSequence)
+        private sequenceRepository: Repository<HaciendaSequence>,
+        private dataSource: DataSource,
+        @Inject(forwardRef(() => OrdersService))
+        private readonly ordersService: OrdersService,
     ) {
         this.apiKey = this.configService.get<string>('HACIENDA_API_KEY', '');
 
@@ -38,6 +49,20 @@ export class HaciendaService {
      * Emits an electronic invoice to the HaciendaCore system.
      * Supports Multi-Issuer (Marketplace) logic.
      */
+    @OnEvent('order.paid')
+    async handleOrderPaid(event: OrderPaidEvent) {
+        const { order } = event;
+        // Only emit if it's an electronic invoice order
+        if (order.isElectronicInvoice) {
+            this.logger.log(`[HACIENDA] Auto-triggering invoice emission for PAID order ${order.id}`);
+            try {
+                await this.emitInvoice(order);
+            } catch (error) {
+                this.logger.error(`[HACIENDA] Auto-emission failed for order ${order.id}: ${error.message}`);
+            }
+        }
+    }
+
     async emitInvoice(order: Order): Promise<any> {
         return this.circuitBreaker.execute(async () => {
             try {
@@ -53,9 +78,23 @@ export class HaciendaService {
                     throw new Error(`Merchant ${order.merchant.name} is not configured for Electronic Invoicing (Msising P12/PIN)`);
                 }
 
-                // 2. Generate local identifiers
-                const consecutive = this.generateConsecutive('01'); // 01 = Factura Electrónica
-                const clave = this.generateClave(order, consecutive);
+                // 2. Generate robust identifiers (or reuse if already exist)
+                let consecutive = order.electronicSequence;
+                let clave = order.haciendaKey;
+
+                if (!consecutive || !clave) {
+                    this.logger.log(`Order ${order.id} missing identifiers. Generating new ones...`);
+                    const identifiers = await this.generateClaveAndConsecutive(order, '01');
+                    consecutive = identifiers.consecutive;
+                    clave = identifiers.clave;
+
+                    // Proactively save to order
+                    await this.ordersService.updateOrderMetadata(order.id, {
+                        haciendaKey: clave,
+                        electronicSequence: consecutive,
+                        haciendaStatus: 'GENERATED'
+                    });
+                }
 
                 // 3. Generate and Sign XML (Using Merchant's P12)
                 const xml = this.xmlService.generateFacturaXml(order, consecutive, clave);
@@ -93,6 +132,15 @@ export class HaciendaService {
                 });
 
                 this.logger.log(`✅ Hacienda v4.4 receipt accepted for ${order.merchant.name}. Status: ${response.status}`);
+
+                // 6. Update order metadata
+                await this.ordersService.updateOrderMetadata(order.id, {
+                    haciendaStatus: 'EMITTED',
+                    haciendaClave: clave,
+                    haciendaEmittedAt: new Date().toISOString(),
+                    haciendaResponse: response.data
+                });
+
                 return { status: 'success', clave, response: response.data };
 
             } catch (error: any) {
@@ -104,6 +152,64 @@ export class HaciendaService {
             // Return null or fallback to avoid breaking the order flow completely
             return null;
         });
+    }
+
+    /**
+     * Generates a robust Clave and Consecutive by incrementing the merchant's sequence.
+     */
+    async generateClaveAndConsecutive(order: Order, docType: string, manager?: any): Promise<{ clave: string; consecutive: string }> {
+        const terminal = '001';
+        const puntoVenta = '00001';
+
+        // 1. Get and increment sequence transactionally
+        const secuencialNumber = await this.getNextSequence(order.merchantId, docType, terminal, puntoVenta, manager);
+        const secuencial = secuencialNumber.toString().padStart(10, '0');
+
+        const consecutive = `${terminal}${puntoVenta}${docType}${secuencial}`;
+
+        // 2. Build Clave
+        const pais = '506';
+        const fecha = new Date();
+        const dia = fecha.getDate().toString().padStart(2, '0');
+        const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+        const anio = fecha.getFullYear().toString().slice(-2);
+        const cedula = (order.merchant?.taxId || '3000000000').padStart(12, '0');
+        const situacion = '1'; // 1=Normal
+        const seguridad = Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+
+        const clave = `${pais}${dia}${mes}${anio}${cedula}${consecutive}${situacion}${seguridad}`;
+
+        return { clave, consecutive };
+    }
+
+    private async getNextSequence(merchantId: string, documentType: string, terminal: string, puntoVenta: string, manager?: any): Promise<number> {
+        const work = async (m: any) => {
+            let sequence = await m.findOne(HaciendaSequence, {
+                where: { merchantId, documentType, terminal, puntoVenta },
+                lock: { mode: 'pessimistic_write' }
+            });
+
+            if (!sequence) {
+                sequence = m.create(HaciendaSequence, {
+                    merchantId,
+                    documentType,
+                    terminal,
+                    puntoVenta,
+                    currentValue: 1
+                });
+            } else {
+                sequence.currentValue = Number(sequence.currentValue) + 1;
+            }
+
+            await m.save(HaciendaSequence, sequence);
+            return Number(sequence.currentValue);
+        };
+
+        if (manager) {
+            return await work(manager);
+        } else {
+            return await this.dataSource.transaction(work);
+        }
     }
 
     private generateConsecutive(docType: string): string {

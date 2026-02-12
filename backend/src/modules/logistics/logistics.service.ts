@@ -63,17 +63,23 @@ export class LogisticsService {
         });
     }
 
-    async findNearby(lat: number, lng: number, radius: number): Promise<LogisticsMission[]> {
-        // Simple implementation: return all unassigned READY missions
-        // In a real app, we would use PostGIS or Haversine
-        return this.missionRepository.find({
-            where: {
-                status: OrderStatus.READY,
-                courierId: null as any
-            },
-            relations: ['order', 'order.merchant'],
-            order: { createdAt: 'DESC' }
-        });
+    async findNearby(lat: number, lng: number, radiusMeters: number = 5000): Promise<LogisticsMission[]> {
+        // Real PostGIS spatial search
+        // Filters missions that are:
+        // 1. Unassigned (courierId IS NULL)
+        // 2. READY status
+        // 3. Within 'radiusMeters' from the provided (lat, lng)
+        return this.missionRepository.createQueryBuilder('mission')
+            .leftJoinAndSelect('mission.order', 'order')
+            .leftJoinAndSelect('order.merchant', 'merchant')
+            .where('mission.courierId IS NULL')
+            .andWhere('mission.status = :status', { status: OrderStatus.READY })
+            .andWhere(
+                'ST_DWithin(mission.location, ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography, :radius)',
+                { lng, lat, radius: radiusMeters }
+            )
+            .orderBy('mission.createdAt', 'DESC')
+            .getMany();
     }
 
     async claimMission(missionId: string, courierId: string): Promise<LogisticsMission> {
@@ -82,18 +88,30 @@ export class LogisticsService {
             throw new BadRequestException('Solo repartidores VERIFICADOS pueden aceptar misiones');
         }
 
-        const mission = await this.missionRepository.findOne({ where: { id: missionId } });
-        if (!mission) throw new NotFoundException('Mission not found');
-        if (mission.courierId) throw new BadRequestException('Mission already claimed');
+        // Use a transaction with pessimistic locking to prevent race conditions
+        return await this.dataSource.transaction(async (manager) => {
+            const mission = await manager.findOne(LogisticsMission, {
+                where: { id: missionId },
+                lock: { mode: 'pessimistic_write' } // SELECT ... FOR UPDATE
+            });
 
-        mission.courierId = courierId;
-        if (mission.status === OrderStatus.PENDING) {
-            mission.status = OrderStatus.CONFIRMED;
-        }
-        const savedMission = await this.missionRepository.save(mission);
+            if (!mission) throw new NotFoundException('Mission not found');
 
-        this.logisticsGateway.emitMissionUpdate(savedMission);
-        return savedMission;
+            // Re-check unassigned status inside the lock
+            if (mission.courierId) {
+                this.logger.warn(`Race condition avoided: Courier ${courierId} tried to claim already claimed mission ${missionId}`);
+                throw new BadRequestException('Esta misión ya ha sido aceptada por otro repartidor');
+            }
+
+            mission.courierId = courierId;
+            if (mission.status === OrderStatus.PENDING) {
+                mission.status = OrderStatus.CONFIRMED;
+            }
+
+            const savedMission = await manager.save(mission);
+            this.logisticsGateway.emitMissionUpdate(savedMission);
+            return savedMission;
+        });
     }
 
     async releaseMission(missionId: string, courierId: string): Promise<LogisticsMission> {

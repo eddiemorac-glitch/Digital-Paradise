@@ -235,8 +235,9 @@ export class OrdersService {
                 // ... (rest of code)
 
 
-                order.haciendaKey = this.generateHaciendaKey(now, timestampPart, randomSuffix);
-                order.electronicSequence = `0010000101${timestampPart}`;
+                const { clave, consecutive } = await this.haciendaService.generateClaveAndConsecutive(order, '01', queryRunner.manager);
+                order.haciendaKey = clave;
+                order.electronicSequence = consecutive;
 
                 await this.logStatusChange(order, OrderStatus.PENDING);
 
@@ -381,79 +382,87 @@ export class OrdersService {
     }
 
     async updatePaymentStatus(id: string, paymentStatus: string, transactionId?: string): Promise<Order> {
-        const order = await this.findOne(id);
+        // Use a transaction for consistent updates and event matching
+        return await this.dataSource.transaction(async (manager) => {
+            const order = await manager.findOne(Order, {
+                where: { id },
+                relations: ['items']
+            });
 
-        // IDEMPOTENCY GUARD: Exit if already paid or confirmed
-        if (order.paymentStatus === 'PAID' || order.status === OrderStatus.CONFIRMED) {
-            this.logger.log(`Skipping payment update for order ${id}: Already PAID or CONFIRMED.`);
-            return order;
-        }
+            if (!order) throw new NotFoundException(`Order ${id} not found`);
 
-        order.paymentStatus = paymentStatus;
-        if (transactionId) {
-            order.transactionId = transactionId;
-        }
+            // IDEMPOTENCY GUARD: Exit if already paid or confirmed
+            if (order.paymentStatus === 'PAID' || order.status === OrderStatus.CONFIRMED) {
+                this.logger.log(`Skipping payment update for order ${id}: Already PAID or CONFIRMED.`);
+                return order;
+            }
 
-        if (paymentStatus === 'PAID') {
-            await this.logStatusChange(order, OrderStatus.CONFIRMED);
-            order.metadata = order.metadata || {};
+            order.paymentStatus = paymentStatus;
+            if (transactionId) {
+                order.transactionId = transactionId;
+            }
 
-            // Phase 12: Update Event Inventory (Optimized Batch)
-            if (order.items && order.items.length > 0) {
-                const eventQuantities = new Map<string, number>();
-                for (const item of order.items) {
-                    if (item.eventId) {
-                        eventQuantities.set(item.eventId, (eventQuantities.get(item.eventId) || 0) + item.quantity);
+            if (paymentStatus === 'PAID') {
+                await this.logStatusChange(order, OrderStatus.CONFIRMED);
+                order.metadata = order.metadata || {};
+
+                // Update Event Inventory
+                if (order.items && order.items.length > 0) {
+                    const eventQuantities = new Map<string, number>();
+                    for (const item of order.items) {
+                        if (item.eventId) {
+                            eventQuantities.set(item.eventId, (eventQuantities.get(item.eventId) || 0) + item.quantity);
+                        }
+                    }
+
+                    for (const [eventId, totalQty] of eventQuantities.entries()) {
+                        await manager.increment(
+                            'Event',
+                            { id: eventId },
+                            'soldTickets',
+                            totalQty
+                        );
                     }
                 }
 
-                for (const [eventId, totalQty] of eventQuantities.entries()) {
-                    await this.dataSource.getRepository('Event').increment(
-                        { id: eventId },
-                        'soldTickets',
-                        totalQty
-                    );
+                // AUTO-UPDATE EVENT REQUESTS
+                if (order.items && order.items.length > 0) {
+                    const requestItems = order.items.filter(i => i.eventRequestId);
+                    if (requestItems.length > 0) {
+                        const requestIds = requestItems.map(i => i.eventRequestId);
+                        await manager.createQueryBuilder()
+                            .update('EventRequest')
+                            .set({
+                                paymentStatus: 'PAID',
+                                status: 'PENDING',
+                                paymentMetadata: {
+                                    orderId: order.id,
+                                    paidAt: new Date(),
+                                    transactionId
+                                }
+                            })
+                            .whereInIds(requestIds)
+                            .execute();
+                    }
                 }
+
+                // Emit event outside transaction to be safe? 
+                // Or better: Use Transactional Event Publisher if available.
+                // For now, we emit after save.
             }
 
-            // AUTO-UPDATE EVENT REQUESTS (Phase 45: Monetization)
-            if (order.items && order.items.length > 0) {
-                const requestItems = order.items.filter(i => i.eventRequestId);
-                if (requestItems.length > 0) {
-                    const requestIds = requestItems.map(i => i.eventRequestId);
-                    // Update requests to PAID
-                    await this.dataSource.createQueryBuilder()
-                        .update('EventRequest')
-                        .set({
-                            paymentStatus: 'PAID',
-                            status: 'PENDING', // Move to PENDING approval queue (or APPROVED if auto-approve enabled)
-                            paymentMetadata: {
-                                orderId: order.id,
-                                paidAt: new Date(),
-                                transactionId
-                            }
-                        })
-                        .whereInIds(requestIds)
-                        .execute();
+            const savedOrder = await manager.save(Order, order);
 
-                    this.logger.log(`Auto-updated ${requestIds.length} EventRequests to PAID for Order ${order.id}`);
-                }
+            if (paymentStatus === 'PAID') {
+                this.eventEmitter.emit('order.paid', new OrderPaidEvent(savedOrder));
             }
 
-            // Emit event for background tasks (Hacienda, Logistics, Rewards)
-            this.eventEmitter.emit(
-                'order.paid',
-                new OrderPaidEvent(order)
-            );
-        }
+            if (savedOrder.merchantId) {
+                this.ordersGateway.emitOrderStatusUpdate(savedOrder.merchantId, savedOrder);
+            }
 
-        const savedOrder = await this.orderRepository.save(order);
-
-        if (savedOrder.merchantId) {
-            this.ordersGateway.emitOrderStatusUpdate(savedOrder.merchantId, savedOrder);
-        }
-
-        return savedOrder;
+            return savedOrder;
+        });
     }
 
     async updateOrderMetadata(id: string, partialMetadata: Record<string, any>): Promise<void> {
@@ -598,19 +607,6 @@ export class OrdersService {
         return savedOrder;
     }
 
-    private generateHaciendaKey(now: Date, timestampPart: string, randomSuffix: string): string {
-        const day = String(now.getDate()).padStart(2, '0');
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const year = String(now.getFullYear()).slice(-2);
-
-        // Mock Hacienda key structure for Phase 26
-        const taxIdMock = '0'.repeat(12);
-        const situation = '1';
-        const security = (timestampPart + randomSuffix).substring(0, 8);
-        const sequence = `0010000101`.padStart(20, '0'); // Corrected to 20 chars
-
-        return `506${day}${month}${year}${taxIdMock}${sequence}${situation}${security}`;
-    }
 
     async emitInvoiceForOrder(orderId: string, userId: string, userRole: UserRole) {
         const order = await this.findOne(orderId);

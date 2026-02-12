@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Inject, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, Not, IsNull } from 'typeorm';
 import { Merchant } from './entities/merchant.entity';
@@ -208,6 +208,15 @@ export class MerchantsService {
 
         if (merchant.status !== MerchantStatus.PENDING_APPROVAL) {
             throw new NotFoundException(`Merchant is not pending approval (current status: ${merchant.status})`);
+        }
+
+        // Hardening: Enforce Mandatory Hacienda Data for Costa Rica
+        if (!merchant.economicActivityCode) {
+            throw new BadRequestException(`El comercio "${merchant.name}" no tiene configurado el Código de Actividad Económica, el cual es obligatorio para emitir facturas en Hacienda.`);
+        }
+
+        if (!merchant.taxId) {
+            throw new BadRequestException(`El comercio "${merchant.name}" no tiene Cédula Jurídica/Física configurada.`);
         }
 
         merchant.status = MerchantStatus.ACTIVE;

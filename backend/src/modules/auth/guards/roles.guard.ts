@@ -17,6 +17,12 @@ export class RolesGuard implements CanActivate {
             return true;
         }
         const { user } = context.switchToHttp().getRequest();
+
+        // ADMIN Bypasses all role checks
+        if (user?.role === UserRole.ADMIN) {
+            return true;
+        }
+
         return requiredRoles.some((role) => user?.role === role);
     }
 }
