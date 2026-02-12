@@ -118,9 +118,10 @@ export class OrdersService {
         const TRANSACTION_FEE_PERCENT = 0.05;
 
         const baseAmount = itemsSubtotal + tax + deliveryFee + courierTip;
-        const transactionFee = (baseAmount * TRANSACTION_FEE_PERCENT) + TRANSACTION_FEE_FLAT;
 
-        const total = baseAmount + transactionFee;
+        // Formula: Total = (Base + FlatFee) / (1 - %Fee)
+        const total = Math.ceil((baseAmount + TRANSACTION_FEE_FLAT) / (1 - TRANSACTION_FEE_PERCENT));
+        const transactionFee = total - baseAmount;
 
         return {
             items: validItems,
@@ -598,6 +599,23 @@ export class OrdersService {
                 providerMessage: refundResult.message
             }
         };
+
+        // 3. Hacienda Credit Note Emission (CR Compliance)
+        if (order.haciendaKey && order.metadata?.haciendaStatus === 'EMITTED') {
+            this.logger.log(`Triggering Hacienda Credit Note for refunded order ${orderId}`);
+            try {
+                // Background task to not block the response, but ideally we'd want to track it.
+                this.haciendaService.emitCreditNote(order, order.haciendaKey, reason)
+                    .then(response => {
+                        if (response) {
+                            this.logger.log(`✅ Credit Note emitted successfully for order ${orderId}`);
+                        }
+                    })
+                    .catch(e => this.logger.error(`❌ Automated Credit Note failed: ${e.message}`));
+            } catch (error) {
+                this.logger.error(`Hacienda NC Failed: ${error.message}`);
+            }
+        }
 
         const savedOrder = await this.orderRepository.save(order);
 
