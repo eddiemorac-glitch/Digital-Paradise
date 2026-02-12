@@ -19,14 +19,15 @@ export const MerchantCard: React.FC<MerchantCardProps> = ({
 
     return (
         <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            className="absolute top-24 left-8 z-[1001] w-72 pointer-events-auto"
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            className="fixed md:absolute md:top-24 md:left-8 bottom-0 left-0 right-0 md:bottom-auto md:right-auto z-[10005] md:z-[1001] md:w-72 pointer-events-auto"
         >
-            <div className="glass p-6 rounded-[2rem] border-primary/20 bg-background/60 backdrop-blur-xl">
+            <div className="bottom-sheet md:glass md:p-6 md:rounded-[2rem] md:border-primary/20 md:bg-background/60 md:backdrop-blur-xl">
+                <div className="bottom-sheet-handle md:hidden" />
                 <div className="flex items-center justify-between mb-4">
-                    <div className="p-3 rounded-xl bg-primary/10 text-primary">
+                    <div className="p-3 rounded-xl bg-primary/10 text-primary md:p-3">
                         <MapPin size={20} />
                     </div>
                     <button onClick={onClose} className="text-white/20 hover:text-white transition-all">

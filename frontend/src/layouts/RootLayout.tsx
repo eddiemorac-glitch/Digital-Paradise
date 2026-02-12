@@ -304,7 +304,7 @@ export const RootLayout = () => {
             <MainFooter />
 
             {/* Floating Action Button Stack (WhatsApp + Cart) */}
-            <div className="fixed bottom-[88px] right-4 z-[9000] flex flex-col items-end gap-3 pointer-events-none">
+            <div className="fixed bottom-[104px] lg:bottom-[88px] right-4 z-[9000] flex flex-col items-end gap-3 pointer-events-none">
 
                 {/* WhatsApp Button */}
                 <motion.a
@@ -353,7 +353,7 @@ export const RootLayout = () => {
                 onClick={() => navigate('/assistant')}
                 whileHover={{ scale: 1.1, rotate: -10, y: -5 }}
                 whileTap={{ scale: 0.9 }}
-                className="fixed bottom-[88px] left-4 w-14 h-14 lg:w-16 lg:h-16 glass shadow-[0_0_40px_rgba(0,255,102,0.2)] rounded-[1.8rem] flex items-center justify-center z-[9000] group border border-primary/20 overflow-hidden"
+                className="fixed bottom-[104px] lg:bottom-[88px] left-4 w-14 h-14 lg:w-16 lg:h-16 glass shadow-[0_0_40px_rgba(0,255,102,0.2)] rounded-[1.8rem] flex items-center justify-center z-[9000] group border border-primary/20 overflow-hidden"
             >
                 <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(0,255,102,0.5)]" />

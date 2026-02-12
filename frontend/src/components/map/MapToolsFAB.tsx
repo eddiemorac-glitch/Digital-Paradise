@@ -20,7 +20,7 @@ export const MapToolsFAB: React.FC<MapToolsFABProps> = ({ isOpen, onClick }) => 
                 playTacticalSound('CLICK');
             }}
             className={`
-                md:hidden absolute right-4 bottom-4 z-[1002] w-14 h-14 
+                md:hidden absolute right-4 bottom-[104px] z-[1002] w-14 h-14 
                 glass rounded-full flex items-center justify-center 
                 transition-all duration-500 border-2
                 ${isOpen

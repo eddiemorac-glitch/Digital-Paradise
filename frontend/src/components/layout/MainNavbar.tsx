@@ -36,11 +36,11 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
     };
 
     return (
-        <nav className="fixed top-0 w-full z-[10000] glass border-b border-white/5 px-4 md:px-8 py-4 flex justify-between items-center">
-            <div className="flex items-center gap-3">
+        <nav className="fixed top-0 w-full z-[10000] glass border-b border-white/5 px-4 md:px-8 py-2 md:py-4 flex justify-between items-center transition-all duration-300">
+            <div className="flex items-center gap-2 md:gap-3">
                 <motion.img
                     src={logo}
-                    className="w-10 h-10 object-contain filter drop-shadow-[0_0_8px_rgba(0,255,102,0.4)]"
+                    className="w-8 h-8 md:w-10 md:h-10 object-contain filter drop-shadow-[0_0_8px_rgba(0,255,102,0.4)]"
                     animate={{ y: [0, -4, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                     alt="Logo Tortuga"
@@ -48,7 +48,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                     style={{ cursor: 'pointer' }}
                 />
                 <span
-                    className="text-xl font-black tracking-tighter text-white hidden sm:block cursor-pointer"
+                    className="text-lg md:text-xl font-black tracking-tighter text-white hidden sm:block cursor-pointer"
                     onClick={handleBackToHome}
                 >
                     DIGITAL<span className="text-primary">PARADISE</span>
@@ -97,24 +97,24 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                         playTacticalSound('CLICK');
                         navigate('/map');
                     }}
-                    className="bg-tactical-events px-4 sm:px-6 py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap lg:flex items-center justify-center"
+                    className="bg-tactical-events px-4 sm:px-6 py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap hidden lg:flex items-center justify-center"
                 >
                     {t('events')}
                 </motion.button>
 
                 <button
                     onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                    className="glass px-3 py-2 rounded-xl text-xs flex items-center gap-2 border border-white/10 hover:border-primary/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)] font-black uppercase tracking-tighter group"
+                    className="glass px-2 py-1.5 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs flex items-center gap-1.5 md:gap-2 border border-white/10 hover:border-primary/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)] font-black uppercase tracking-tighter group"
                     title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
                 >
                     <span className={language === 'es' ? 'opacity-100 scale-110' : 'opacity-30 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all underline decoration-primary font-light'}>ES</span>
                     <span className="opacity-10 text-[8px]">|</span>
                     <span className={language === 'en' ? 'opacity-100 scale-110' : 'opacity-30 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all underline decoration-primary font-light'}>EN</span>
-                    <span className="ml-1">{language === 'es' ? '🇪🇸' : '🇬🇧'}</span>
+                    <span className="ml-1 hidden xs:inline">{language === 'es' ? '🇪🇸' : '🇬🇧'}</span>
                 </button>
 
                 {user ? (
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 md:gap-3">
                         {/* Real-time Status Indicator (Phase 34) */}
                         <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10 hidden sm:flex">
                             <div className={`w-1.5 h-1.5 rounded-full ${isSocketConnected ? 'bg-primary shadow-[0_0_8px_rgba(0,255,102,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(255,0,0,0.8)]'}`} />
@@ -123,9 +123,9 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
 
                         <button
                             onClick={onOpenNotifications}
-                            className="w-10 h-10 rounded-full glass border border-white/5 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/50 transition-all relative group"
+                            className="w-8 h-8 md:w-10 md:h-10 rounded-full glass border border-white/5 flex items-center justify-center text-white/60 hover:text-primary hover:border-primary/50 transition-all relative group"
                         >
-                            <Bell size={18} className="group-hover:animate-swing" />
+                            <Bell size={16} className="md:w-[18px] md:h-[18px] group-hover:animate-swing" />
                         </button>
 
                         <div
@@ -141,14 +141,14 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
 
                         <div
                             onClick={() => navigate('/profile')}
-                            className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-black cursor-pointer hover:scale-110 hover:border-primary transition-all shadow-[0_0_15px_rgba(0,255,102,0.2)] overflow-hidden"
+                            className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-black cursor-pointer hover:scale-110 hover:border-primary transition-all shadow-[0_0_15px_rgba(0,255,102,0.2)] overflow-hidden"
                         >
                             {(() => {
                                 const avatarId = user.avatarId || profile?.avatarId;
                                 const AvatarComponent = avatarId ? getAvatarById(avatarId)?.component : null;
 
                                 if (AvatarComponent) {
-                                    return <AvatarComponent className="w-full h-full p-1" />;
+                                    return <AvatarComponent className="w-full h-full p-0.5 md:p-1" />;
                                 }
 
                                 const fullName = (user as any).fullName || (user as any).name;
@@ -159,7 +159,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                 ) : (
                     <button
                         onClick={() => onOpenAuth('login')}
-                        className="bg-primary hover:bg-primary-dark text-background font-black px-6 py-2.5 rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,255,102,0.3)] text-xs uppercase tracking-widest"
+                        className="bg-primary hover:bg-primary-dark text-background font-black px-4 py-1.5 md:px-6 md:py-2.5 rounded-xl md:rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,255,102,0.3)] text-[10px] md:text-xs uppercase tracking-widest"
                     >
                         {t('login')}
                     </button>

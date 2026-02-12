@@ -27,7 +27,7 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="absolute bottom-12 left-6 right-6 z-[1001] md:left-auto md:w-[400px] md:right-12"
+            className="fixed bottom-[104px] left-6 right-6 z-[1001] md:absolute md:bottom-12 md:left-auto md:w-[400px] md:right-12"
         >
             <div className="glass p-6 rounded-[2.5rem] border-primary/30 bg-background/80 backdrop-blur-3xl shadow-2xl relative overflow-hidden">
                 {/* Visual indicator for fixed mode */}
