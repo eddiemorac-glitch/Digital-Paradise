@@ -42,6 +42,10 @@ export const PushNotificationPrompt = ({
         if (isReady && !blocked && !show && !dismissed) {
             setShow(true);
             onOpen?.();
+        } else if (blocked && show) {
+            // CRITICAL FIX: Hide if subsequently blocked by higher priority prompt
+            setShow(false);
+            // We don't call onClose here to avoid loop, just hide UI
         }
     }, [isReady, blocked, show, dismissed, onOpen]);
 
