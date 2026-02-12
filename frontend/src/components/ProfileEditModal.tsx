@@ -59,9 +59,9 @@ export const ProfileEditModal = ({ isOpen, onClose, currentName, currentPhone, c
                             </h2>
                             <button
                                 onClick={onClose}
-                                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
+                                className="p-4 -mr-4 hover:bg-white/10 rounded-full transition-colors text-white/60 hover:text-white"
                             >
-                                <X size={20} />
+                                <X size={24} />
                             </button>
                         </div>
 

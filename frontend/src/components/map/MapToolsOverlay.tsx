@@ -71,7 +71,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                         animate={{ y: 0 }}
                         exit={{ y: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed bottom-0 left-0 right-0 z-[1004] glass rounded-t-[2.5rem] border-t border-primary/20 p-6 pb-12 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]"
+                        className="fixed bottom-0 left-0 right-0 z-[1004] glass rounded-t-[2.5rem] border-t border-primary/20 p-6 pb-[calc(1.5rem+var(--sab))] sm:pb-12 shadow-[0_-20px_50px_rgba(0,0,0,0.5)] safe-area-inset"
                     >
                         {/* Drag Handle */}
                         <div className="w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-8" />

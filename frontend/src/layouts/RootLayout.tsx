@@ -30,7 +30,7 @@ import { useNotificationStore } from '../store/notificationStore';
 import { CocoWelcomeBubble } from '../components/CocoWelcomeBubble';
 
 export const RootLayout = () => {
-    const { language } = useLanguageStore();
+    const { language, t } = useLanguageStore();
     const { addNotification } = useNotificationStore();
     const navigate = useNavigate();
     const location = useLocation();
@@ -88,7 +88,7 @@ export const RootLayout = () => {
                     ? `Orden #${order.id.slice(0, 4)}: ${order.status}`
                     : `Order #${order.id.slice(0, 4)}: ${order.status}`,
                 {
-                    description: language === 'es' ? 'Estado actualizado en tiempo real' : 'Status updated in real-time',
+                    description: t('status_update_toast'),
                     icon: <Bell size={16} className="text-primary" />,
                 }
             );
@@ -98,8 +98,9 @@ export const RootLayout = () => {
         socketService.onNewOrder((order) => {
             if (user.role === 'merchant') {
                 queryClient.invalidateQueries({ queryKey: ['merchant-orders'] });
-                toast.success('¡Nuevo Pedido Recibido!', {
-                    description: `Cliente: ${order.user?.fullName || 'Anon'}`,
+                const clientName = order.user?.fullName || 'Anon';
+                toast.success(t('new_order_received'), {
+                    description: `${t('client')}: ${clientName}`,
                     duration: 5000,
                 });
                 new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3').play().catch(() => { });
@@ -110,10 +111,10 @@ export const RootLayout = () => {
         socketService.onMissionAvailable((mission) => {
             if (user.role === 'delivery') {
                 queryClient.invalidateQueries({ queryKey: ['available-deliveries'] });
-                toast.info('🚀 Nueva misión disponible', {
-                    description: mission.merchant?.name || 'Comercio cercano necesita recolecta',
+                toast.info(t('new_mission'), {
+                    description: mission.merchant?.name || t('mission_desc'),
                     action: {
-                        label: 'Ver',
+                        label: t('explore'),
                         onClick: () => navigate('/delivery')
                     }
                 });
@@ -159,7 +160,7 @@ export const RootLayout = () => {
                 }
                 return prev;
             });
-            toast.info(language === 'es' ? '🚀 ¡El repartidor está llegando!' : '🚀 Driver is arriving!');
+            toast.info(t('driver_arriving'));
         });
 
         // Global Product Update (Phase 36)
@@ -169,18 +170,16 @@ export const RootLayout = () => {
             queryClient.invalidateQueries({ queryKey: ['merchant-status'] });
             queryClient.invalidateQueries({ queryKey: ['my-merchant'] });
 
-            toast.info(language === 'es' ? 'Inventario actualizado' : 'Inventory updated', {
-                description: language === 'es'
-                    ? 'La disponibilidad de productos ha cambiado.'
-                    : 'Product availability has changed.',
+            toast.info(t('inventory_updated'), {
+                description: t('inventory_desc'),
                 icon: <Package size={16} />
             });
         });
 
         const handleSocketAuthError = () => {
             addNotification({
-                title: 'Sesión Expirada',
-                message: 'Tu sesión de tiempo real ha caducado. Reingresando...',
+                title: t('session_expired'),
+                message: t('session_expired_desc'),
                 type: 'warning'
             });
             handleLogout();
@@ -193,7 +192,7 @@ export const RootLayout = () => {
             socket.off('disconnect', handleDisconnect);
             window.removeEventListener('socket_auth_error', handleSocketAuthError);
         };
-    }, [user, queryClient, language, addNotification]);
+    }, [user, queryClient, language, addNotification, t]);
 
     // UI Signal Listeners (Phase 35)
     useEffect(() => {

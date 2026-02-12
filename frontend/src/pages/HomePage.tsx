@@ -168,7 +168,7 @@ export const HomePage = () => {
                         <motion.h1
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] italic mb-8 z-10 drop-shadow-2xl"
+                            className="text-[var(--text-hero)] font-black tracking-tighter leading-[0.85] italic mb-8 z-10 drop-shadow-2xl"
                         >
                             {selectedCategory ? (
                                 <span className="text-primary">{selectedCategory.toUpperCase()}</span>
@@ -184,7 +184,7 @@ export const HomePage = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-sm sm:text-base font-medium text-white/60 max-w-md mx-auto mb-10 leading-relaxed"
+                            className="text-[var(--text-base)] font-medium text-white/60 max-w-md mx-auto mb-10 leading-relaxed px-4"
                         >
                             {language === 'es'
                                 ? 'Explora lo mejor del Caribe Sur. Gastronomía, cultura y naturaleza en un solo lugar.'
@@ -195,37 +195,37 @@ export const HomePage = () => {
                             initial={{ opacity: 0, y: 40 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.2, duration: 0.8 }}
-                            className="w-full max-w-2xl z-10"
+                            className="w-full max-w-2xl z-10 safe-area-x"
                         >
-                            <div className="relative group p-1.5 glass-morphism rounded-full border-white/10 hover:border-primary/30 transition-colors duration-300">
-                                <div className="flex items-center gap-3">
-                                    <div className="pl-4 text-white/40 group-focus-within:text-primary transition-colors">
-                                        <Search size={24} />
+                            <div className="relative group p-1.5 glass-morphism rounded-3xl sm:rounded-full border-white/10 hover:border-primary/30 transition-colors duration-300">
+                                <div className="flex items-center gap-2 sm:gap-3">
+                                    <div className="pl-3 sm:pl-4 text-white/40 group-focus-within:text-primary transition-colors">
+                                        <Search size={20} className="sm:w-6 sm:h-6" />
                                     </div>
                                     <input
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         placeholder={t('search_placeholder')}
-                                        className="bg-transparent border-none outline-none flex-1 text-white placeholder:text-white/30 font-semibold py-3 text-lg"
+                                        className="bg-transparent border-none outline-none flex-1 text-white placeholder:text-white/30 font-semibold py-2 sm:py-3 text-base sm:text-lg min-w-0"
                                     />
-                                    <div className="flex items-center gap-2 pr-2">
+                                    <div className="flex items-center gap-1 sm:gap-2 pr-1 sm:pr-2">
                                         <Button
                                             variant={isListening ? 'primary' : 'ghost'}
                                             size="icon"
                                             onClick={handleVoiceSearch}
-                                            className={`rounded-full w-10 h-10 ${isListening ? 'animate-pulse bg-primary/20 text-primary' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
+                                            className={`rounded-xl sm:rounded-full w-10 h-10 ${isListening ? 'animate-pulse bg-primary/20 text-primary' : 'text-white/60 hover:text-white hover:bg-white/10'}`}
                                         >
-                                            <Mic size={20} />
+                                            <Mic size={18} className="sm:w-5 sm:h-5" />
                                         </Button>
-                                        <div className="h-8 w-[1px] bg-white/10" />
+                                        <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
                                         <Button
                                             variant="primary"
                                             size="icon"
-                                            className="rounded-full w-12 h-12 shadow-[0_0_20px_rgba(0,255,157,0.3)] hover:scale-105 transition-transform"
+                                            className="rounded-xl sm:rounded-full w-10 h-10 sm:w-12 sm:h-12 shadow-[0_0_20px_rgba(0,255,157,0.3)] hover:scale-105 transition-transform"
                                             onClick={() => handleSortChange('distance')}
                                         >
-                                            <MapPin size={22} className="text-black" />
+                                            <MapPin size={20} className="text-black sm:w-[22px] sm:h-[22px]" />
                                         </Button>
                                     </div>
                                 </div>
@@ -236,13 +236,13 @@ export const HomePage = () => {
                     {/* Filter Section */}
                     <section className="mb-12 px-4">
                         <div className="max-w-7xl mx-auto flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <span className="w-2 h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(0,255,102,0.4)]" />
+                            <div className="flex items-center gap-3 safe-area-x">
+                                <span className="w-1.5 h-6 sm:w-2 sm:h-8 bg-primary rounded-full shadow-[0_0_15px_rgba(0,255,102,0.4)]" />
                                 <div className="flex flex-col">
-                                    <h2 className="text-xl font-bold tracking-tight text-white uppercase italic">
+                                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white uppercase italic">
                                         {selectedCategory ? t(selectedCategory as any) : (language === 'es' ? 'Explorar' : 'Explore')}
                                     </h2>
-                                    <p className="text-xs font-medium text-primary/80">
+                                    <p className="text-[10px] sm:text-xs font-medium text-primary/80">
                                         {filteredMerchants.length} {language === 'es' ? 'lugares cerca de ti' : 'places near you'}
                                     </p>
                                 </div>

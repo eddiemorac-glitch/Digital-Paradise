@@ -322,14 +322,14 @@ export const CartSidebar = ({ isOpen, onClose, onAuth }: CartSidebarProps) => {
                                                 value={address}
                                                 onChange={(e) => setAddress(e.target.value)}
                                                 placeholder="Ingresa tu dirección exacta..."
-                                                className={`w-full bg-white/5 border ${isOutOfRange ? 'border-red-500/50' : 'border-white/5'} rounded-xl p-3 pr-10 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-primary/30 transition-all min-h-[52px] resize-none`}
+                                                className={`w-full bg-white/5 border ${isOutOfRange ? 'border-red-500/50' : 'border-white/5'} rounded-xl p-4 pr-12 text-xs text-white placeholder:text-white/10 focus:outline-none focus:border-primary/30 transition-all min-h-[64px] resize-none`}
                                             />
                                             <button
                                                 disabled={isDetecting}
                                                 onClick={detectLocation}
-                                                className="absolute right-2 top-2 h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-primary transition-all"
+                                                className="absolute right-2 top-2 h-10 w-10 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-primary transition-all active:scale-95"
                                             >
-                                                <MapPin size={14} className={isDetecting ? 'animate-pulse' : ''} />
+                                                <MapPin size={16} className={isDetecting ? 'animate-pulse' : ''} />
                                             </button>
                                         </div>
                                         {isOutOfRange && (
@@ -394,7 +394,7 @@ export const CartSidebar = ({ isOpen, onClose, onAuth }: CartSidebarProps) => {
                                                 <button
                                                     key={amount}
                                                     onClick={() => setTip(courierTip === amount ? 0 : amount)}
-                                                    className={`flex-1 h-9 rounded-lg text-[10px] font-black transition-all border ${courierTip === amount
+                                                    className={`flex-1 h-11 rounded-lg text-[10px] font-black transition-all border ${courierTip === amount
                                                         ? 'bg-primary/20 border-primary/30 text-primary'
                                                         : 'bg-white/5 border-white/5 text-white/40 hover:border-white/10'
                                                         }`}

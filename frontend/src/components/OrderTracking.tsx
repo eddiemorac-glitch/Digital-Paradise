@@ -157,8 +157,8 @@ export const OrderTracking = ({ orderId }: OrderTrackingProps) => {
 
             {/* Header */}
             <div className="tracking-header">
-                <button className="tracking-header__back" onClick={() => navigate('/orders')}>
-                    <ArrowLeft size={20} />
+                <button className="tracking-header__back h-12 w-12 sm:h-14 sm:w-14" onClick={() => navigate('/orders')}>
+                    <ArrowLeft size={20} className="sm:w-6 sm:h-6" />
                 </button>
                 <div className="tracking-header__info">
                     <span className="tracking-header__label">Tu Pedido</span>
@@ -309,8 +309,8 @@ export const OrderTracking = ({ orderId }: OrderTrackingProps) => {
                             <p className="tracking-courier__role">Tu Repartidor</p>
                         </div>
                         <div className="tracking-courier__actions">
-                            <button className="tracking-courier__btn" onClick={() => setShowChat(!showChat)}>
-                                <MessageSquare size={18} />
+                            <button className="tracking-courier__btn h-12 w-12 sm:h-14 sm:w-14" onClick={() => setShowChat(!showChat)}>
+                                <MessageSquare size={20} className="sm:w-6 sm:h-6" />
                             </button>
                         </div>
                     </motion.div>
@@ -362,20 +362,7 @@ export const OrderTracking = ({ orderId }: OrderTrackingProps) => {
                 {/* Back to orders */}
                 <button
                     onClick={() => navigate('/orders')}
-                    style={{
-                        width: '100%',
-                        padding: '1rem',
-                        borderRadius: '1.5rem',
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        color: 'rgba(255,255,255,0.5)',
-                        fontWeight: 800,
-                        fontSize: 10,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.15em',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                    }}
+                    className="w-full p-5 sm:p-4 rounded-[1.5rem] bg-white/5 border border-white/08 text-white/50 font-black text-[10px] uppercase tracking-[0.15em] cursor-pointer transition-all active:scale-[0.98] active:bg-white/10"
                 >
                     ← Volver a Mis Pedidos
                 </button>

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Power, Zap, Loader2, Settings } from 'lucide-react';
 import { Merchant } from '../../../api/merchants';
+import { useLanguageStore } from '../../../store/languageStore';
 
 interface OperationsBarProps {
     merchant: Merchant | undefined;
@@ -11,7 +12,6 @@ interface OperationsBarProps {
     onViewProfile: () => void;
     isStatusPending: boolean;
     isBusyPending: boolean;
-    language: string;
 }
 
 export const OperationsBar: React.FC<OperationsBarProps> = ({
@@ -22,12 +22,13 @@ export const OperationsBar: React.FC<OperationsBarProps> = ({
     onViewProfile,
     isStatusPending,
     isBusyPending,
-    language
 }) => {
+    const { t } = useLanguageStore();
+
     return (
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-6">
-                <div className="w-20 h-20 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden shadow-2xl relative group">
+                <div className="w-20 h-20 rounded-[2rem] bg-white/5 border border-white/10 overflow-hidden shadow-2xl relative group shrink-0">
                     {merchant?.logoUrl ? (
                         <img src={merchant.logoUrl} alt={merchant.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
                     ) : (
@@ -40,13 +41,13 @@ export const OperationsBar: React.FC<OperationsBarProps> = ({
                     </div>
                 </div>
                 <div>
-                    <h1 className="text-4xl font-black tracking-tighter uppercase italic text-white flex items-center gap-3">
-                        {merchant?.name || (language === 'es' ? 'Mi Negocio' : 'My Business')}
+                    <h1 className="text-3xl md:text-4xl font-black tracking-tighter uppercase italic text-white flex items-center gap-3 flex-wrap">
+                        {merchant?.name || t('my_business')}
                         <div className="flex items-center gap-3 sm:flex">
                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
                                 <div className={`w-1.5 h-1.5 rounded-full ${isSocketConnected ? 'bg-primary shadow-[0_0_8px_rgba(0,255,102,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(255,0,0,0.8)]'}`} />
                                 <span className="text-[8px] font-black uppercase tracking-widest text-white/40">
-                                    {isSocketConnected ? (language === 'es' ? 'Sincronizado' : 'Synced') : (language === 'es' ? 'Desconectado' : 'Offline')}
+                                    {isSocketConnected ? t('status_synced') : t('status_offline')}
                                 </span>
                             </div>
                             <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-white/5 border border-white/10">
@@ -65,11 +66,11 @@ export const OperationsBar: React.FC<OperationsBarProps> = ({
                 {/* BUSY MODE TOGGLE */}
                 <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
                     <div className="flex flex-col items-end">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-white/30 mb-0.5">
-                            {language === 'es' ? 'Modo Saturado' : 'Busy Mode'}
+                        <p className="text-[8px] font-black uppercase tracking-widest text-white/30 mb-0.5 whitespace-nowrap">
+                            {t('busy_mode')}
                         </p>
                         <p className={`text-[10px] font-black uppercase ${merchant?.operationalSettings?.isBusy ? 'text-amber-500' : 'text-white/20'}`}>
-                            {merchant?.operationalSettings?.isBusy ? (language === 'es' ? 'Activado' : 'Active') : (language === 'es' ? 'Normal' : 'Normal')}
+                            {merchant?.operationalSettings?.isBusy ? t('status_active') : t('status_normal')}
                         </p>
                     </div>
                     <button
@@ -86,16 +87,16 @@ export const OperationsBar: React.FC<OperationsBarProps> = ({
                     </button>
                 </div>
 
-                <div className="h-8 w-px bg-white/10" />
+                <div className="h-8 w-px bg-white/10 hidden sm:block" />
 
                 {/* ONLINE STATUS TOGGLE */}
                 <div className="flex items-center gap-4">
                     <div className="flex flex-col items-end">
-                        <p className="text-[8px] font-black uppercase tracking-widest text-white/30 mb-0.5">
-                            {language === 'es' ? 'Estado Tienda' : 'Store Status'}
+                        <p className="text-[8px] font-black uppercase tracking-widest text-white/30 mb-0.5 whitespace-nowrap">
+                            {t('store_status_label')}
                         </p>
                         <p className={`text-[10px] font-black uppercase ${merchant?.isActive ? 'text-primary' : 'text-red-500'}`}>
-                            {merchant?.isActive ? (language === 'es' ? 'En Línea' : 'Online') : (language === 'es' ? 'Offline' : 'Offline')}
+                            {merchant?.isActive ? t('status_online') : t('status_offline')}
                         </p>
                     </div>
                     <button
@@ -116,12 +117,12 @@ export const OperationsBar: React.FC<OperationsBarProps> = ({
                     </button>
                 </div>
 
-                <div className="h-8 w-px bg-white/10" />
+                <div className="h-8 w-px bg-white/10 hidden sm:block" />
 
                 <button
                     onClick={onViewProfile}
                     className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all hover:bg-white/10 hover:scale-105"
-                    title={language === 'es' ? 'Configuración' : 'Settings'}
+                    title={t('settings')}
                 >
                     <Settings size={18} />
                 </button>

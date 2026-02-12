@@ -43,6 +43,7 @@
     position: relative;
     z-index: 10;
     padding: 1.5rem;
+    padding-top: calc(1rem + var(--sat));
     display: flex;
     align-items: center;
     gap: 1rem;
@@ -80,7 +81,7 @@
 }
 
 .tracking-header__title {
-    font-size: 1.25rem;
+    font-size: var(--text-xl, 1.25rem);
     font-weight: 900;
     text-transform: uppercase;
     letter-spacing: -0.02em;
@@ -93,7 +94,7 @@
     z-index: 10;
     max-width: 480px;
     margin: 0 auto;
-    padding: 0 1.5rem 6rem;
+    padding: 0 1.5rem calc(2rem + var(--sab));
     display: flex;
     flex-direction: column;
     gap: 1.5rem;

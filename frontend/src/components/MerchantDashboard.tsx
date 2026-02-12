@@ -35,7 +35,7 @@ import { NewOrderOverlay } from './merchant/dashboard/NewOrderOverlay';
 
 export const MerchantDashboard = () => {
     const queryClient = useQueryClient();
-    const { language } = useLanguageStore();
+    const { t } = useLanguageStore();
     const [view, setView] = useState<'orders' | 'menu' | 'events' | 'profile' | 'hacienda'>('orders');
     const [newOrderNotify, setNewOrderNotify] = useState<Order | null>(null);
     const [activeChat, setActiveChat] = useState<Order | null>(null);
@@ -111,10 +111,10 @@ export const MerchantDashboard = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-merchant'] });
-            toast.success(language === 'es' ? 'Estado de tienda actualizado' : 'Store status updated');
+            toast.success(t('store_status_updated'));
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || (language === 'es' ? 'Error al actualizar estado' : 'Error updating status'));
+            toast.error(error.response?.data?.message || t('error_updating_status'));
         }
     });
 
@@ -125,7 +125,7 @@ export const MerchantDashboard = () => {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['my-merchant'] });
-            toast.success(language === 'es' ? 'Modo de servicio actualizado' : 'Service mode updated');
+            toast.success(t('service_mode_updated'));
         }
     });
 
@@ -135,7 +135,7 @@ export const MerchantDashboard = () => {
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['merchant-orders'] });
             queryClient.invalidateQueries({ queryKey: ['merchant-stats'] });
-            toast.success(language === 'es' ? 'Estado actualizado' : 'Status updated');
+            toast.success(t('status_updated'));
         }
     });
 
@@ -143,19 +143,19 @@ export const MerchantDashboard = () => {
         return (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
                 <Loader2 className="animate-spin text-primary" size={40} />
-                <p className="text-xs font-black uppercase tracking-widest text-white/40">Sincronizando Command Center...</p>
+                <p className="text-xs font-black uppercase tracking-widest text-white/40">{t('sync_command_center')}</p>
             </div>
         );
     }
 
     return (
-        <div className="space-y-12 pb-20">
+        <div className="space-y-8 sm:space-y-12 pb-32 lg:pb-20 safe-area-x">
             {/* Chat Modal Layer */}
             <AnimatePresence>
                 {activeChat && (
                     <OrderChat
                         orderId={activeChat.id}
-                        partnerName={activeChat.user?.fullName || (language === 'es' ? 'Cliente' : 'Client')}
+                        partnerName={activeChat.user?.fullName || t('client')}
                         partnerRole="client"
                         onClose={() => setActiveChat(null)}
                     />
@@ -168,7 +168,6 @@ export const MerchantDashboard = () => {
                     <NewOrderOverlay
                         order={newOrderNotify}
                         onClose={() => setNewOrderNotify(null)}
-                        language={language}
                     />
                 )}
             </AnimatePresence>
@@ -182,36 +181,35 @@ export const MerchantDashboard = () => {
                 onViewProfile={() => setView('profile')}
                 isStatusPending={toggleStatusMutation.isPending}
                 isBusyPending={toggleBusyMutation.isPending}
-                language={language}
             />
 
             {/* 2. DATE SELECTOR & NAVIGATION */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 border-y border-white/5 py-8">
-                <div className="flex bg-white/5 p-1.5 rounded-[2rem] border border-white/5 w-full lg:max-w-fit backdrop-blur-3xl overflow-x-auto scrollbar-hide">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 sm:gap-8 border-y border-white/5 py-6 sm:py-8">
+                <div className="flex bg-white/5 p-1.5 rounded-2xl sm:rounded-[2rem] border border-white/5 w-full lg:max-w-fit backdrop-blur-3xl overflow-x-auto scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
                     <TabButton
                         active={view === 'orders'}
                         onClick={() => setView('orders')}
                         icon={<ClipboardList size={16} />}
-                        label={language === 'es' ? 'Comando' : 'Command'}
+                        label={t('command')}
                     />
                     <TabButton
                         active={view === 'menu'}
                         onClick={() => setView('menu')}
                         icon={<UtensilsCrossed size={16} />}
-                        label={language === 'es' ? 'Inventario' : 'Inventory'}
+                        label={t('inventory')}
                     />
                     <TabButton
                         active={view === 'events'}
                         onClick={() => setView('events')}
                         icon={<Star size={16} />}
-                        label={language === 'es' ? 'Marketing' : 'Marketing'}
+                        label={t('marketing')}
                         special="events"
                     />
                     <TabButton
                         active={view === 'hacienda'}
                         onClick={() => setView('hacienda')}
                         icon={<Shield size={16} />}
-                        label={language === 'es' ? 'Hacienda' : 'Hacienda'}
+                        label={t('hacienda')}
                         special="legal"
                     />
                 </div>
@@ -237,31 +235,27 @@ export const MerchantDashboard = () => {
                         <FinancialInsights
                             stats={stats}
                             chartData={stats?.chartData || []}
-                            language={language}
                         />
 
                         {/* Tactical Operations Tier */}
-                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 pt-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 sm:gap-12 pt-8">
                             {/* Orders Queue (Main) */}
-                            <div className="lg:col-span-3">
+                            <div className="lg:col-span-3 order-1 lg:order-none">
                                 <LiveOrders
                                     orders={orders || []}
                                     isLoading={ordersLoading}
-                                    language={language}
                                     onUpdateStatus={(id, status) => updateStatusMutation.mutate({ id, status })}
                                     onViewReceipt={(order) => setActiveChat(order)}
                                 />
                             </div>
 
                             {/* Sidebar: Reviews & Quick Stock */}
-                            <div className="space-y-12 lg:col-span-1">
+                            <div className="space-y-8 sm:space-y-12 lg:col-span-1 order-2 lg:order-none">
                                 <QuickStockToggle
                                     merchantId={merchantId!}
-                                    language={language}
                                 />
                                 <ReviewsList
                                     reviews={reviews || []}
-                                    language={language}
                                 />
                             </div>
                         </div>
@@ -314,7 +308,7 @@ const TabButton = ({ active, onClick, icon, label, special }: TabButtonProps) =>
     return (
         <button
             onClick={onClick}
-            className={`flex-1 lg:flex-none flex items-center justify-center gap-3 px-8 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap ${active ? activeStyle : 'text-white/30 hover:text-white/60 hover:bg-white/5'}`}
+            className={`flex-1 lg:flex-none flex items-center justify-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-[1.5rem] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500 whitespace-nowrap active:scale-95 ${active ? activeStyle : 'text-white/30 hover:text-white/60 hover:bg-white/5'}`}
         >
             {icon}
             {label}

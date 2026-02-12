@@ -26,24 +26,31 @@
   --text-muted: #94a3b8;
 
   /* 2026 Fluid Typography System */
-  --text-xs: clamp(0.625rem, 2vw, 0.75rem);
-  --text-sm: clamp(0.75rem, 2.5vw, 0.875rem);
-  --text-base: clamp(0.875rem, 3vw, 1rem);
-  --text-lg: clamp(1rem, 4vw, 1.25rem);
-  --text-xl: clamp(1.25rem, 5vw, 1.5rem);
-  --text-2xl: clamp(1.5rem, 6vw, 2rem);
-  --text-hero: clamp(2.5rem, 10vw, 6rem);
+  --text-xs: clamp(0.7rem, 2vw, 0.75rem);
+  --text-sm: clamp(0.8rem, 2.5vw, 0.875rem);
+  --text-base: clamp(0.9rem, 3vw, 1rem);
+  --text-lg: clamp(1.1rem, 4vw, 1.25rem);
+  --text-xl: clamp(1.3rem, 5vw, 1.5rem);
+  --text-2xl: clamp(1.6rem, 6vw, 2.1rem);
+  --text-hero: clamp(2.8rem, 12vw, 6.5rem);
+
+  /* Safe Area Variables */
+  --sat: env(safe-area-inset-top);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
+  --sar: env(safe-area-inset-right);
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--text);
   overflow-x: hidden;
   position: relative;
+  min-height: 100dvh;
 }
 
 /* Premium Grain Overlay */
@@ -68,6 +75,7 @@ h5,
 h6 {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
 /* Selection */
@@ -76,44 +84,47 @@ h6 {
   color: var(--background);
 }
 
-/* Premium Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Premium Scrollbar - Hidden on Mobile, Sleek on Desktop */
+@media (min-width: 1024px) {
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: var(--background);
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  transition: all 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+@media (max-width: 1023px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* Enhanced Glassmorphism & Caribbean Cards */
 .glass {
-  background: rgba(10, 20, 30, 0.6);
+  background: rgba(10, 20, 30, 0.7);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
   border: 1px solid var(--glass-border);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 .glass-morphism {
-  @apply glass rounded-[2rem] p-6 transition-all duration-300;
+  @apply glass rounded-[1.5rem] p-4 sm:rounded-[2rem] sm:p-6 transition-all duration-300;
 }
 
 .glass-card-hover {
-  @apply transition-all duration-300 hover:bg-white/5 hover:border-white/20 hover:-translate-y-1;
-}
-
-.glass-card-hover:hover {
-  box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
+  @apply transition-all duration-300 active:scale-[0.98] sm:hover:bg-white/5 sm:hover:border-white/20 sm:hover:-translate-y-1;
 }
 
 .text-gradient {

@@ -45,7 +45,7 @@ export const OrderSummary = ({
             {/* Dotted perforation */}
             <div className="w-full border-t border-dashed border-white/10" />
 
-            <div className="px-5 pt-4 pb-5 space-y-4">
+            <div className="px-5 pt-4 pb-5 sm:pb-5 pb-[calc(1.25rem+var(--sab))] space-y-4">
                 {/* Price breakdown */}
                 <div className="space-y-2">
                     {/* Subtotal */}

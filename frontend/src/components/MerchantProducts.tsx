@@ -37,7 +37,7 @@ export const MerchantProducts = ({ merchant, onBack }: MerchantProductsProps) =>
             <div className="fixed bottom-0 -left-40 w-96 h-96 bg-secondary/5 rounded-full blur-[140px] pointer-events-none -z-10 transform-gpu" />
 
             {/* Navigation Bar */}
-            <nav className="sticky top-0 z-50 px-4 py-6 flex items-center justify-between pointer-events-none mb-8">
+            <nav className="sticky top-0 z-50 px-4 py-4 sm:py-6 flex items-center justify-between pointer-events-none mb-4 sm:mb-8 safe-area-top">
                 <Button
                     variant="glass"
                     size="sm"
@@ -50,8 +50,8 @@ export const MerchantProducts = ({ merchant, onBack }: MerchantProductsProps) =>
             </nav>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <header className="mb-20">
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                <header className="mb-12 sm:mb-20">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
                         {/* Merchant Details */}
                         <div className="lg:col-span-7 space-y-8">
                             <motion.div
@@ -62,7 +62,7 @@ export const MerchantProducts = ({ merchant, onBack }: MerchantProductsProps) =>
                                     {merchant.category}
                                 </Badge>
                                 <div className="flex flex-wrap items-center gap-4 mb-6">
-                                    <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-[0.85] uppercase italic text-gradient filter drop-shadow-[0_0_30px_rgba(0,255,102,0.1)]">
+                                    <h1 className="text-[var(--text-4xl)] sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.85] uppercase italic text-gradient filter drop-shadow-[0_0_30px_rgba(0,255,102,0.1)]">
                                         {merchant.name}
                                     </h1>
                                     {getMerchantAvailability(merchant).available === false && (
@@ -134,7 +134,7 @@ export const MerchantProducts = ({ merchant, onBack }: MerchantProductsProps) =>
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-32 mb-40">
+                    <div className="space-y-16 sm:space-y-32 mb-20 sm:mb-40">
                         {/* Popular Items Section */}
                         {popularProducts && popularProducts.length > 0 && (
                             <section>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, X, Check } from 'lucide-react';
 import { socketService } from '../api/socket';
 import { pushNotificationService } from '../services/pushNotificationService';
+import { useLanguageStore } from '../store/languageStore';
 
 interface PushNotificationPromptProps {
     delay?: number; // ms to wait before showing prompt
@@ -20,6 +21,7 @@ export const PushNotificationPrompt = ({
     const [show, setShow] = useState(false);
     const [dismissed, setDismissed] = useState(false);
     const [isReady, setIsReady] = useState(false);
+    const { t } = useLanguageStore();
 
     useEffect(() => {
         // Check if already granted or denied
@@ -50,8 +52,8 @@ export const PushNotificationPrompt = ({
             onClose?.();
             // Show a test notification
             pushNotificationService.show({
-                title: '🎉 Notificaciones Activadas',
-                body: 'Recibirás alertas de tus pedidos y ofertas especiales',
+                title: t('push_success_title'),
+                body: t('push_success_desc'),
                 tag: 'welcome'
             });
         }
@@ -72,42 +74,42 @@ export const PushNotificationPrompt = ({
                 initial={{ opacity: 0, y: 50, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                className="fixed bottom-[96px] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[9500]"
+                className="fixed bottom-[120px] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[9500] safe-area-bottom"
             >
-                <div className="glass border border-white/10 rounded-[2rem] p-6 shadow-2xl">
+                <div className="glass border border-white/10 rounded-[2.5rem] p-6 shadow-2xl backdrop-blur-xl bg-[#0B1015]/80">
                     <div className="flex gap-4 items-start">
-                        <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shrink-0">
-                            <Bell size={24} />
+                        <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shrink-0 border border-primary/20 shadow-[0_0_20px_rgba(0,255,102,0.15)]">
+                            <Bell size={28} className="fill-primary/20" />
                         </div>
-                        <div className="flex-1 space-y-2">
-                            <h3 className="font-black text-white text-sm uppercase tracking-tight">
-                                ¿Activar Notificaciones?
+                        <div className="flex-1 space-y-1">
+                            <h3 className="font-black text-white text-base uppercase tracking-tight">
+                                {t('push_title')}
                             </h3>
-                            <p className="text-xs text-white/50 leading-relaxed">
-                                Recibe alertas instantáneas sobre el estado de tus pedidos y ofertas exclusivas.
+                            <p className="text-xs text-white/60 leading-relaxed font-medium">
+                                {t('push_desc')}
                             </p>
                         </div>
                         <button
                             onClick={handleDismiss}
-                            className="text-white/30 hover:text-white transition-colors"
+                            className="text-white/30 hover:text-white transition-colors p-1"
                         >
-                            <X size={18} />
+                            <X size={20} />
                         </button>
                     </div>
 
-                    <div className="flex gap-3 mt-5">
+                    <div className="flex gap-3 mt-6">
                         <button
                             onClick={handleDismiss}
-                            className="flex-1 py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs font-bold uppercase tracking-wider hover:bg-white/10 transition-all"
+                            className="flex-1 py-3.5 px-4 rounded-xl bg-white/5 border border-white/10 text-white/60 text-[10px] font-black uppercase tracking-wider hover:bg-white/10 transition-all active:scale-95"
                         >
-                            Ahora No
+                            {t('push_later')}
                         </button>
                         <button
                             onClick={handleEnable}
-                            className="flex-1 py-3 px-4 rounded-xl bg-primary text-background text-xs font-black uppercase tracking-wider hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+                            className="flex-1 py-3.5 px-4 rounded-xl bg-primary text-background text-[10px] font-black uppercase tracking-wider hover:bg-primary-dark transition-all flex items-center justify-center gap-2 shadow-[0_4px_20px_rgba(0,255,102,0.3)] active:scale-95"
                         >
-                            <Check size={16} />
-                            Activar
+                            <Check size={14} strokeWidth={4} />
+                            {t('push_enable')}
                         </button>
                     </div>
                 </div>

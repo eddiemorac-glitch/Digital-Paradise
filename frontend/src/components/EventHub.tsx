@@ -59,7 +59,7 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-3xl overflow-hidden flex flex-col"
+            className="fixed inset-0 z-[200] bg-background/95 backdrop-blur-3xl overflow-hidden flex flex-col safe-area-inset"
         >
             {/* Background cinematic gradient - Fixed */}
             <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-orange-500/10 pointer-events-none" />
@@ -82,7 +82,7 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                                 initial={{ y: 20, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ delay: 0.1 }}
-                                className="text-5xl md:text-8xl font-black uppercase tracking-tighter leading-none"
+                                className="text-[var(--text-4xl)] sm:text-[var(--text-7xl)] md:text-8xl font-black uppercase tracking-tighter leading-none"
                             >
                                 {view === 'create' ? (
                                     <span>Publicar <span className="text-primary italic">Eventos</span></span>
@@ -112,9 +112,9 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                                     if (view === 'create') setView('list');
                                     else onClose();
                                 }}
-                                className="w-16 h-16 glass rounded-[2rem] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl"
+                                className="w-12 h-12 sm:w-16 sm:h-16 glass rounded-2xl sm:rounded-[2rem] flex items-center justify-center text-white/40 hover:text-white transition-all shadow-xl"
                             >
-                                {view === 'create' ? <ArrowLeft size={24} /> : <X size={24} />}
+                                {view === 'create' ? <ArrowLeft size={20} className="sm:w-6 sm:h-6" /> : <X size={20} className="sm:w-6 sm:h-6" />}
                             </motion.button>
                         </div>
                     </div>
@@ -168,7 +168,7 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                                             animate={{ y: 0, opacity: 1 }}
                                             transition={{ delay: 0.2 + (index * 0.1) }}
                                             whileHover={{ y: -5 }}
-                                            className={`group relative h-[650px] rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl border transition-all ${isGold ? 'border-primary/50 bg-primary/5' : 'border-white/5 bg-white/2'}`}
+                                            className={`group relative h-[450px] sm:h-[650px] rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden cursor-pointer shadow-2xl border transition-all active:scale-[0.98] ${isGold ? 'border-primary/50 bg-primary/5' : 'border-white/5 bg-white/2'}`}
                                             onClick={() => setSelectedEvent(event)}
                                         >
                                             {/* Ticket Perforation Aesthetic */}
@@ -213,7 +213,7 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                                                         </div>
                                                     )}
                                                 </div>
-                                                <h3 className="text-4xl font-black uppercase tracking-tighter leading-none group-hover:text-primary transition-colors">
+                                                <h3 className="text-2xl sm:text-4xl font-black uppercase tracking-tighter leading-none group-hover:text-primary transition-colors">
                                                     {event.title}
                                                 </h3>
                                             </div>
@@ -304,7 +304,7 @@ export const EventHub: React.FC<EventHubProps> = ({ onClose }) => {
                             animate={{ scale: 1, opacity: 1, y: 0, rotateY: 0 }}
                             exit={{ scale: 0.8, opacity: 0, y: 50, rotateY: -10 }}
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                            className="w-full max-w-lg aspect-[5/8] glass rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] pointer-events-auto relative flex flex-col"
+                            className="w-full max-w-lg aspect-auto sm:aspect-[5/8] h-[85vh] sm:h-auto glass rounded-[2.5rem] sm:rounded-[3.5rem] overflow-hidden border border-white/10 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.5)] pointer-events-auto relative flex flex-col safe-area-bottom"
                             onClick={e => e.stopPropagation()}
                         >
                             {/* Physical Ticket Aesthetics - Perforations */}

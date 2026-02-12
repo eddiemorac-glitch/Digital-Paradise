@@ -42,7 +42,7 @@ export const FilterSheet = ({
                         animate={{ x: 0 }}
                         exit={{ x: '100%' }}
                         transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-                        className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-card/50 backdrop-blur-2xl border-l border-white/10 z-[101] p-8 overflow-y-auto"
+                        className="fixed right-0 top-0 bottom-0 w-full max-w-sm bg-card/50 backdrop-blur-2xl border-l border-white/10 z-[101] p-6 sm:p-8 overflow-y-auto safe-area-inset"
                     >
                         <div className="flex items-center justify-between mb-12">
                             <div className="flex items-center gap-3">

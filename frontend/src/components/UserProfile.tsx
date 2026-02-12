@@ -116,16 +116,16 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
             <div className="flex items-center justify-between">
                 <button
                     onClick={onBack}
-                    className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                    className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em] h-12 px-2"
                 >
-                    <ArrowLeft size={14} /> {t('abort')}
+                    <ArrowLeft size={18} /> {t('abort')}
                 </button>
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => setIsEditModalOpen(true)}
-                        className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em]"
+                        className="flex items-center gap-2 text-white/40 hover:text-white transition-colors text-[10px] font-black uppercase tracking-[0.2em] h-12 px-2"
                     >
-                        <Settings size={14} /> {t('edit')}
+                        <Settings size={18} /> {t('edit')}
                     </button>
                 </div>
             </div>
@@ -162,7 +162,7 @@ export const UserProfile = ({ onBack, onViewOrders, onViewRewards, onViewInvoice
                             <div className="space-y-4 flex-1 text-center md:text-left">
                                 <div className="space-y-1">
 
-                                    <h1 className="text-4xl md:text-6xl font-black tracking-tighter uppercase whitespace-nowrap">
+                                    <h1 className="text-[clamp(2.5rem,5vw,3.75rem)] md:text-6xl font-black tracking-tighter uppercase whitespace-nowrap leading-none">
                                         {profile.fullName.split(' ')[0]} <span className="text-white/20">{profile.fullName.split(' ')[1]}</span>
                                     </h1>
                                     <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-white/40 text-[10px] font-bold uppercase tracking-widest">

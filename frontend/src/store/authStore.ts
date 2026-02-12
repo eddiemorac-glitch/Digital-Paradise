@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 import { useCartStore } from './cartStore';
 
 export interface User {
@@ -21,45 +22,36 @@ interface AuthState {
     logout: () => void;
 }
 
-const getInitialUser = (): User | null => {
-    try {
-        const stored = localStorage.getItem('user');
-        return stored ? JSON.parse(stored) : null;
-    } catch (e) {
-        console.error('Failed to parse user from localStorage', e);
-        return null;
-    }
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-    user: getInitialUser(),
-    token: localStorage.getItem('token'),
-    refreshToken: localStorage.getItem('refresh_token'),
-    setAuth: (user, token, refreshToken) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        localStorage.setItem('user', JSON.stringify(user));
-        set({ user, token, refreshToken });
-    },
-    setTokens: (token, refreshToken) => {
-        localStorage.setItem('token', token);
-        localStorage.setItem('refresh_token', refreshToken);
-        set({ token, refreshToken });
-    },
-    updateUser: (partialUser) => {
-        set((state) => {
-            const updatedUser = state.user ? { ...state.user, ...partialUser } : null;
-            if (updatedUser) {
-                localStorage.setItem('user', JSON.stringify(updatedUser));
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set) => ({
+            user: null,
+            token: null,
+            refreshToken: null,
+            setAuth: (user, token, refreshToken) => {
+                set({ user, token, refreshToken });
+            },
+            setTokens: (token, refreshToken) => {
+                set({ token, refreshToken });
+            },
+            updateUser: (partialUser) => {
+                set((state) => ({
+                    user: state.user ? { ...state.user, ...partialUser } : null
+                }));
+            },
+            logout: () => {
+                useCartStore.getState().clearCart();
+                set({ user: null, token: null, refreshToken: null });
             }
-            return { user: updatedUser };
-        });
-    },
-    logout: () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('user');
-        useCartStore.getState().clearCart();
-        set({ user: null, token: null, refreshToken: null });
-    }
-}))
+        }),
+        {
+            name: 'paradise-auth-storage',
+            storage: createJSONStorage(() => localStorage),
+            partialize: (state) => ({
+                user: state.user,
+                token: state.token,
+                refreshToken: state.refreshToken
+            }),
+        }
+    )
+);

@@ -57,6 +57,18 @@ class SocketService {
         this.socket.on('disconnect', (reason) => {
             devLog('🔌 WebSocket Disconnected:', reason);
         });
+
+        // Mobile Network Resilience
+        window.addEventListener('online', () => {
+            devLog('🌐 Network Online - Forcing Socket Reconnection');
+            if (this.socket && !this.socket.connected) {
+                this.socket.connect();
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            devLog('Testing Network Offline');
+        });
     }
 
     private restoreRooms() {

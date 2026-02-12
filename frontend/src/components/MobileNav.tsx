@@ -46,7 +46,7 @@ export const MobileNav = ({ activeView, onNavigate, cartCount }: MobileNavProps)
 
     return (
         <nav
-            className="fixed bottom-4 xs:bottom-6 left-4 right-4 lg:hidden glass-dark border border-white/10 px-2 py-2 flex justify-around items-center z-[10001] rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-2xl animate-slide-up-entry safe-area-bottom"
+            className="fixed bottom-[calc(1rem+var(--sab))] xs:bottom-[calc(1.5rem+var(--sab))] left-4 right-4 lg:hidden glass-dark border border-white/10 px-2 py-2 flex justify-around items-center z-[10001] rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] backdrop-blur-3xl animate-slide-up-entry safe-area-x"
         >
             <NavButton
                 view={isCourier ? 'delivery-dashboard' : 'home'}

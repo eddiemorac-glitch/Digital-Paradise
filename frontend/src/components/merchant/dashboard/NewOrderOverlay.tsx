@@ -2,14 +2,16 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bell, X, Package, ChevronRight, Zap } from 'lucide-react';
 import { Order } from '../../../api/orders';
+import { useLanguageStore } from '../../../store/languageStore';
 
 interface NewOrderOverlayProps {
     order: Order;
     onClose: () => void;
-    language: string;
 }
 
-export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose, language }) => {
+export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose }) => {
+    const { t } = useLanguageStore();
+
     // Sound effect could be added here
     React.useEffect(() => {
         const audio = new Audio('/sounds/notification.mp3');
@@ -47,7 +49,7 @@ export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose
                     </motion.div>
 
                     <h2 className="text-4xl font-black uppercase italic tracking-tighter text-white mb-2">
-                        {language === 'es' ? '¡NUEVA ORDEN!' : 'NEW ORDER!'}
+                        {t('new_order')}
                     </h2>
                     <p className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-8">
                         #{order.id.slice(-8).toUpperCase()}
@@ -59,8 +61,8 @@ export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose
                                 <Package size={20} />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">{language === 'es' ? 'Cliente' : 'Customer'}</p>
-                                <p className="text-lg font-black text-white">{order.user?.fullName || 'Cliente Caribe'}</p>
+                                <p className="text-[10px] font-black uppercase text-white/40 tracking-widest">{t('customer')}</p>
+                                <p className="text-lg font-black text-white">{order.user?.fullName || t('guest')}</p>
                             </div>
                         </div>
 
@@ -69,15 +71,15 @@ export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose
                                 <div key={idx} className="flex justify-between items-center text-xs font-black uppercase tracking-widest">
                                     <span className="text-white/60">
                                         <span className="text-primary mr-2">{item.quantity}x</span>
-                                        {item.product?.name || item.event?.title || 'Item'}
+                                        {item.product?.name || item.event?.title || t('product_default')}
                                     </span>
-                                    <span className="text-white/20">₡{Number(item.price).toLocaleString()}</span>
+                                    <span className="text-white/20 font-mono">₡{Number(item.price).toLocaleString()}</span>
                                 </div>
                             ))}
                         </div>
 
                         <div className="mt-6 pt-4 border-t border-white/5 flex justify-between items-center">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{language === 'es' ? 'Total Pedido' : 'Order Total'}</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest text-white/40">{t('order_total')}</span>
                             <span className="text-2xl font-black text-primary font-mono">₡{Number(order.total).toLocaleString()}</span>
                         </div>
                     </div>
@@ -88,7 +90,7 @@ export const NewOrderOverlay: React.FC<NewOrderOverlayProps> = ({ order, onClose
                             className="bg-primary text-background font-black uppercase tracking-[0.2em] py-5 rounded-[2rem] text-xs shadow-[0_10px_30px_rgba(0,255,102,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
                         >
                             <Zap size={18} className="fill-background" />
-                            {language === 'es' ? 'ENTRAR AL COMANDO' : 'ENTER COMMAND'}
+                            {t('enter_command')}
                             <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                         </button>
                     </div>

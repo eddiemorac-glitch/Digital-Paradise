@@ -20,7 +20,7 @@ export const MerchantCard = ({ merchant, onClick, isSpotlight }: MerchantCardPro
         <Card
             whileHover={availability.available ? { y: -12, scale: 1.02 } : {}}
             whileTap={availability.available ? { scale: 0.98 } : {}}
-            className={`group h-full flex flex-col border-white/5 hover:border-primary/20 transition-all duration-500 active:opacity-90 ${!availability.available ? 'opacity-70' : ''
+            className={`group h-full flex flex-col border-white/5 hover:border-primary/20 transition-all duration-500 active:opacity-90 active:scale-[0.98] touches-default ${!availability.available ? 'opacity-70' : ''
                 } ${isSpotlight ? 'bg-primary/5 shadow-[0_0_40px_rgba(0,255,102,0.1)] border-primary/20' : ''}`}
             noPadding
             onClick={onClick}
@@ -68,15 +68,15 @@ export const MerchantCard = ({ merchant, onClick, isSpotlight }: MerchantCardPro
             </div>
 
             <CardContent className="p-6 flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-3">
-                    <CardTitle className={`group-hover:text-primary transition-colors duration-300 ${isSpotlight ? 'text-2xl sm:text-3xl font-black' : ''}`}>
+                <div className="flex justify-between items-start mb-3 gap-2">
+                    <CardTitle className={`group-hover:text-primary transition-colors duration-300 line-clamp-1 ${isSpotlight ? 'text-[var(--text-xl)] sm:text-[var(--text-2xl)] font-black' : 'text-[var(--text-base)] font-bold'}`}>
                         {merchant.name}
                     </CardTitle>
-                    <div className="flex items-center gap-1.5 text-accent bg-accent/10 px-2 py-1 rounded-lg border border-accent/10">
-                        <Star size={14} className={(merchant.avgRating ?? 0) > 0 ? 'fill-accent' : ''} />
-                        <span className="text-[10px] font-black">
+                    <div className="flex items-center gap-1 sm:gap-1.5 text-accent bg-accent/10 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-accent/10 whitespace-nowrap">
+                        <Star size={12} className={`sm:w-[14px] sm:h-[14px] ${(merchant.avgRating ?? 0) > 0 ? 'fill-accent' : ''}`} />
+                        <span className="text-[9px] sm:text-[10px] font-black">
                             {(merchant.avgRating ?? 0) > 0
-                                ? `${merchant.avgRating} (${merchant.reviewCount})`
+                                ? merchant.avgRating
                                 : t('new')}
                         </span>
                     </div>
@@ -104,10 +104,10 @@ export const MerchantCard = ({ merchant, onClick, isSpotlight }: MerchantCardPro
                 </div>
             </CardContent>
 
-            <CardFooter className="p-6 pt-0 mt-0">
+            <CardFooter className="p-4 sm:p-6 pt-0 mt-0">
                 <Button
                     variant={availability.available ? 'glass' : 'ghost'}
-                    className="w-full group/btn"
+                    className="w-full group/btn btn-mobile"
                     disabled={!availability.available}
                 >
                     <span className="flex items-center gap-2">
