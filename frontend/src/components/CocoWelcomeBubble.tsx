@@ -72,7 +72,7 @@ export const CocoWelcomeBubble = ({ onOpenChat }: { onOpenChat: () => void }) =>
                                     initial={{ opacity: 0, x: -10 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.5 + (i * 0.2) }}
-                                    className={`text-sm font-bold italic ${i === 0 ? 'text-white text-base' : 'text-white/60'}`}
+                                    className={`text-base font-bold italic ${i === 0 ? 'text-white text-lg' : 'text-white/60'}`}
                                 >
                                     {msg}
                                 </motion.p>
