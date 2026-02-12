@@ -3,10 +3,8 @@ import './index.css'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { router } from './router.tsx'
-import { registerSW } from 'virtual:pwa-register'
 import { CrashBoundary } from './components/CrashBoundary'
 
-registerSW({ immediate: true })
 
 const queryClient = new QueryClient({
     defaultOptions: {

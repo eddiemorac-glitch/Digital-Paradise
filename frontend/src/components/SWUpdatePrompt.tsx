@@ -1,70 +1,33 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { RefreshCw, X } from 'lucide-react';
+import { useRegisterSW } from 'virtual:pwa-register/react';
 
 /**
  * Shows a toast when a new Service Worker version is detected.
- * Uses the `controllerchange` event from the SW lifecycle.
+ * Uses the `useRegisterSW` hook from vite-plugin-pwa.
  */
 export const SWUpdatePrompt = () => {
-    const [showUpdate, setShowUpdate] = useState(false);
-    const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | null>(null);
+    const {
+        offlineReady: [offlineReady, setOfflineReady],
+        needRefresh: [needRefresh, setNeedRefresh],
+        updateServiceWorker,
+    } = useRegisterSW({
+        onRegistered(r) {
+            console.log('SW Registered:', r);
+        },
+        onRegisterError(error) {
+            console.log('SW Registration Error', error);
+        },
+    });
 
-    useEffect(() => {
-        if (!('serviceWorker' in navigator)) return;
-
-        const handleSWUpdate = async () => {
-            const registration = await navigator.serviceWorker.getRegistration();
-            if (!registration) return;
-
-            // If there's already a waiting worker
-            if (registration.waiting) {
-                setWaitingWorker(registration.waiting);
-                setShowUpdate(true);
-                return;
-            }
-
-            // Listen for new service worker installing
-            registration.addEventListener('updatefound', () => {
-                const newWorker = registration.installing;
-                if (!newWorker) return;
-
-                newWorker.addEventListener('statechange', () => {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                        // New version available
-                        setWaitingWorker(newWorker);
-                        setShowUpdate(true);
-                    }
-                });
-            });
-        };
-
-        handleSWUpdate();
-
-        let refreshing = false;
-        const handleControllerChange = () => {
-            if (refreshing) return;
-            refreshing = true;
-            window.location.reload();
-        };
-
-        navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
-
-        return () => {
-            navigator.serviceWorker.removeEventListener('controllerchange', handleControllerChange);
-        };
-    }, []);
-
-    const handleUpdate = () => {
-        if (waitingWorker) {
-            waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-        }
-        setShowUpdate(false);
+    const close = () => {
+        setOfflineReady(false);
+        setNeedRefresh(false);
     };
 
     return (
         <AnimatePresence>
-            {showUpdate && (
+            {(offlineReady || needRefresh) && (
                 <motion.div
                     initial={{ opacity: 0, y: 60, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -76,7 +39,7 @@ export const SWUpdatePrompt = () => {
                         <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary via-secondary to-primary" />
 
                         <button
-                            onClick={() => setShowUpdate(false)}
+                            onClick={close}
                             className="absolute top-3 right-3 text-white/30 hover:text-white transition-colors"
                         >
                             <X size={16} />
@@ -87,17 +50,32 @@ export const SWUpdatePrompt = () => {
                                 <RefreshCw size={20} className="animate-spin" style={{ animationDuration: '3s' }} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-sm text-white">Nueva Versión Disponible</h4>
-                                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">Actualización lista</p>
+                                <h4 className="font-bold text-sm text-white">
+                                    {offlineReady ? 'Contenido Disponible Offline' : 'Nueva Versión Disponible'}
+                                </h4>
+                                <p className="text-[10px] text-white/40 uppercase tracking-widest font-bold">
+                                    {offlineReady ? 'App lista para usar sin conexión' : 'Actualización lista para instalar'}
+                                </p>
                             </div>
                         </div>
 
-                        <button
-                            onClick={handleUpdate}
-                            className="w-full py-2.5 rounded-xl bg-primary text-background text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all active:scale-95"
-                        >
-                            Actualizar Ahora
-                        </button>
+                        {needRefresh && (
+                            <button
+                                onClick={() => updateServiceWorker(true)}
+                                className="w-full py-2.5 rounded-xl bg-primary text-background text-xs font-black uppercase tracking-widest hover:brightness-110 transition-all active:scale-95"
+                            >
+                                Actualizar Ahora
+                            </button>
+                        )}
+
+                        {offlineReady && !needRefresh && (
+                            <button
+                                onClick={close}
+                                className="w-full py-2.5 rounded-xl bg-white/10 text-white text-xs font-black uppercase tracking-widest hover:bg-white/20 transition-all"
+                            >
+                                Entendido
+                            </button>
+                        )}
                     </div>
                 </motion.div>
             )}
