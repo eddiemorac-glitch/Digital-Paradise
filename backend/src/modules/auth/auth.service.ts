@@ -9,7 +9,7 @@ import { RegisterDto, LoginDto } from './dto/auth.dto';
 
 import { EmailsService } from '../emails/emails.service';
 import { v4 as uuidv4 } from 'uuid';
-import { RegisterMerchantDto } from './dto/auth.dto';
+import { RegisterMerchantDto, RegisterCourierDto } from './dto/auth.dto';
 import { UserRole } from '../../shared/enums/user-role.enum';
 import { MerchantsService } from '../merchants/merchants.service';
 import { DataSource } from 'typeorm';
@@ -130,6 +130,51 @@ export class AuthService {
         } finally {
             await queryRunner.release();
         }
+    }
+
+    async registerCourier(dto: RegisterCourierDto) {
+        const { email, password, fullName, vehicleType, vehiclePlate, agreedToPrivacyPolicy, privacyPolicyVersion } = dto;
+
+        const existingUser = await this.userRepository.findOne({ where: { email } });
+        if (existingUser) {
+            throw new ConflictException('Email already exists');
+        }
+
+        const hashedPassword = await argon2.hash(password);
+        const verificationToken = uuidv4();
+
+        const user = this.userRepository.create({
+            email,
+            password: hashedPassword,
+            fullName,
+            avatarId: dto.avatarId,
+            role: UserRole.DELIVERY,
+            courierStatus: 'PENDING',
+            vehicleType,
+            vehiclePlate,
+            agreedToPrivacyPolicy,
+            privacyPolicyVersion,
+            privacyPolicyAgreedAt: new Date(),
+            emailVerificationToken: verificationToken,
+            isEmailVerified: false,
+        });
+
+        await this.userRepository.save(user);
+
+        // Send verification email asynchronously
+        this.emailsService.sendVerificationEmail(email, fullName, verificationToken)
+            .catch(err => console.error('Failed to send verification email:', err));
+
+        return {
+            message: 'Courier registration successful. Pending approval.',
+            user: {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName,
+                role: user.role,
+                status: user.courierStatus
+            }
+        };
     }
 
     async login(loginDto: LoginDto) {

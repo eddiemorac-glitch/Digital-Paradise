@@ -1,7 +1,7 @@
 import { Controller, Post, Get, Delete, Body, Param, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, RegisterMerchantDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, RegisterMerchantDto, RegisterCourierDto } from './dto/auth.dto';
 import { WebAuthnService } from './webauthn.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
@@ -21,6 +21,11 @@ export class AuthController {
     @Post('register-merchant')
     registerMerchant(@Body() dto: RegisterMerchantDto) {
         return this.authService.registerMerchant(dto);
+    }
+
+    @Post('register-courier')
+    registerCourier(@Body() dto: RegisterCourierDto) {
+        return this.authService.registerCourier(dto);
     }
 
     @Post('login')

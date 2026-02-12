@@ -1,5 +1,6 @@
 import { IsString, IsEmail, MinLength, IsBoolean, Equals, IsEnum, IsNumber, Min, Max, IsOptional } from 'class-validator';
 import { MerchantCategory } from '../../../shared/enums/merchant.enum';
+import { VehicleType } from '../../../shared/enums/vehicle-type.enum';
 
 export class RegisterDto {
     @IsEmail()
@@ -46,6 +47,15 @@ export class RegisterMerchantDto extends RegisterDto {
     @Min(-180)
     @Max(180)
     longitude: number;
+}
+
+export class RegisterCourierDto extends RegisterDto {
+    @IsEnum(VehicleType)
+    vehicleType: VehicleType;
+
+    @IsString()
+    @IsOptional()
+    vehiclePlate?: string;
 }
 
 export class LoginDto {

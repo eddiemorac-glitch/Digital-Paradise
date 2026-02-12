@@ -21,6 +21,7 @@ const RewardsPage = lazy(() => import('./pages/RewardsPage').then(m => ({ defaul
 const TermsPage = lazy(() => import('./pages/TermsPage').then(m => ({ default: m.TermsPage })));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
 const PaymentCallbackPage = lazy(() => import('./pages/PaymentCallbackPage').then(m => ({ default: m.PaymentCallbackPage })));
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 const DeliveryDashboard = lazy(() => import('./components/DeliveryDashboard').then(m => ({ default: m.DeliveryDashboard })));
 const MerchantDashboard = lazy(() => import('./components/MerchantDashboard').then(m => ({ default: m.MerchantDashboard })));
 
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
             { path: 'terms', element: Loadable(TermsPage)({}) },
             { path: 'privacy', element: Loadable(PrivacyPage)({}) },
             { path: 'payment/callback', element: Loadable(PaymentCallbackPage)({}) },
+            { path: 'verify', element: Loadable(VerifyEmailPage)({}) },
             { path: 'merchant-dashboard', element: <ProtectedRoute><MerchantDashboard /></ProtectedRoute> },
             { path: 'delivery-dashboard', element: <ProtectedRoute><DeliveryDashboard /></ProtectedRoute> },
         ],
