@@ -6,13 +6,14 @@ import { useEffect } from 'react';
 interface SWUpdatePromptProps {
     onOpen?: () => void;
     onClose?: () => void;
+    blocked?: boolean;
 }
 
 /**
  * Shows a toast when a new Service Worker version is detected.
  * Uses the `useRegisterSW` hook from vite-plugin-pwa.
  */
-export const SWUpdatePrompt = ({ onOpen, onClose }: SWUpdatePromptProps) => {
+export const SWUpdatePrompt = ({ onOpen, onClose, blocked = false }: SWUpdatePromptProps) => {
     const {
         offlineReady: [offlineReady, setOfflineReady],
         needRefresh: [needRefresh, setNeedRefresh],
@@ -27,12 +28,12 @@ export const SWUpdatePrompt = ({ onOpen, onClose }: SWUpdatePromptProps) => {
     });
 
     useEffect(() => {
-        if (offlineReady || needRefresh) {
+        if ((offlineReady || needRefresh) && !blocked) {
             onOpen?.();
-        } else {
+        } else if (!offlineReady && !needRefresh) {
             onClose?.();
         }
-    }, [offlineReady, needRefresh, onOpen, onClose]);
+    }, [offlineReady, needRefresh, blocked, onOpen, onClose]);
 
     const close = () => {
         setOfflineReady(false);
@@ -42,7 +43,7 @@ export const SWUpdatePrompt = ({ onOpen, onClose }: SWUpdatePromptProps) => {
 
     return (
         <AnimatePresence>
-            {(offlineReady || needRefresh) && (
+            {(offlineReady || needRefresh) && !blocked && (
                 <motion.div
                     initial={{ opacity: 0, y: 100, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}

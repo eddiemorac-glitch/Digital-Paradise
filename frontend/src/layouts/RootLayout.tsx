@@ -257,10 +257,12 @@ export const RootLayout = () => {
                 onClose={() => setActivePrompt(null)}
             />
             <PWAInstallPrompt
+                blocked={activePrompt !== null && activePrompt !== 'pwa'}
                 onOpen={() => setActivePrompt('pwa')}
                 onClose={() => setActivePrompt(null)}
             />
             <SWUpdatePrompt
+                blocked={activePrompt !== null && activePrompt !== 'update'}
                 onOpen={() => setActivePrompt('update')}
                 onClose={() => setActivePrompt(null)}
             />
