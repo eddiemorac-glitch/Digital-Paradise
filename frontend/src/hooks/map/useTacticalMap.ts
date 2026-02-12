@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, RefObject } from 'react';
+import { useState, useMemo, useCallback, useEffect, RefObject, useRef } from 'react';
 import L from 'leaflet';
 import {
     EventData,
@@ -64,6 +64,8 @@ export const useTacticalMap = ({
     const [viewKey, setViewKey] = useState(0);
     const triggerRefresh = useCallback(() => setViewKey(prev => prev + 1), []);
 
+    const lastBoundsRef = useRef<string | null>(null);
+
     // 2. Data Synchronization (Viewport Aware)
     useEffect(() => {
         if (!mapRef.current) return;
@@ -90,6 +92,15 @@ export const useTacticalMap = ({
 
             try {
                 const bounds = map.getBounds();
+                const boundsKey = `${bounds.getSouth().toFixed(4)},${bounds.getNorth().toFixed(4)},${bounds.getWest().toFixed(4)},${bounds.getEast().toFixed(4)}`;
+
+                // OPTIMIZATION: Skip fetch if bounds haven't changed (significant precision)
+                if (lastBoundsRef.current === boundsKey && viewKey !== 0) {
+                    setIsLoading(false);
+                    return;
+                }
+                lastBoundsRef.current = boundsKey;
+
                 const geojson = await eventsApi.getInBounds(
                     bounds.getSouth(),
                     bounds.getNorth(),
@@ -116,7 +127,7 @@ export const useTacticalMap = ({
                 setDynamicEvents(fetchedEvents);
             } catch (err) {
                 if (!controller.signal.aborted) {
-                    devLog("Tactical Orchestrator: Failed to fetch viewport events:", err);
+                    // devLog("Tactical Orchestrator: Failed to fetch viewport events:", err);
                 }
             } finally {
                 if (!controller.signal.aborted) {
@@ -128,14 +139,14 @@ export const useTacticalMap = ({
         setIsLoading(true);
         // Standard debounced sync. 
         // We rely on the initial onMapReady call from MapController + triggerRefresh.
-        const delay = viewKey === 0 ? 500 : 1000;
+        const delay = viewKey === 0 ? 500 : 1200; // Increased debounce time for stability
         const timeoutId = setTimeout(fetchEvents, delay);
 
         return () => {
             controller.abort();
             clearTimeout(timeoutId);
         };
-    }, [mapRef, state.mode, viewKey]); // REMOVED dynamicEvents.length === 0 to break loop
+    }, [mapRef, state.mode, viewKey]);
 
     // 3. Intelligence Sub-Systems
     const filteredEvents = useMemo(() => {

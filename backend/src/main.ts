@@ -40,6 +40,12 @@ async function bootstrap() {
     const configService = app.get(ConfigService);
     app.setGlobalPrefix('api');
 
+    // Enable Gzip compression
+    app.use(require('compression')());
+
+    // Enable Helmet for Security Headers
+    app.use(require('helmet')());
+
     // Swagger - only available in development
     if (process.env.NODE_ENV !== 'production') {
         const config = new DocumentBuilder()

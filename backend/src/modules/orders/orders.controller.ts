@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards, Request, BadRequestException, Logger, ServiceUnavailableException, InternalServerErrorException, HttpException, Patch, Query, ParseUUIDPipe, Res } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -25,6 +26,7 @@ export class OrdersController {
     ) { }
 
     @Post('create')
+    @Throttle({ default: { limit: 5, ttl: 60000 } })
     async create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
         return this.ordersService.create(req.user.userId, createOrderDto);
     }

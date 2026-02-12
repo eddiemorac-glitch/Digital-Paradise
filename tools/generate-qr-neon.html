@@ -4,15 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rasta Vibes QR - Digital Paradise</title>
+    <title>Neon Jungle QR - Digital Paradise</title>
     <script type="text/javascript" src="https://unpkg.com/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
     <script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --rasta-red: #E32B2B;
-            --rasta-yellow: #FCD826;
-            --rasta-green: #009B3A;
+            --neon-green: #39FF14;
+            --neon-blue: #00FFFF;
+            --neon-purple: #FF00FF;
             --dark-bg: #050A0F;
         }
 
@@ -27,17 +27,18 @@
             font-family: 'Orbitron', sans-serif;
             overflow: hidden;
             background-image:
-                linear-gradient(135deg, rgba(227, 43, 43, 0.1) 0%, rgba(252, 216, 38, 0.1) 50%, rgba(0, 155, 58, 0.1) 100%);
+                radial-gradient(circle at 20% 20%, rgba(0, 255, 255, 0.05) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(57, 255, 20, 0.05) 0%, transparent 40%);
         }
 
-        /* Jungle Leaves Background (CSS/SVG) - Adapted for Rasta Feel */
+        /* Jungle Leaves Background (CSS/SVG) */
         .leaf {
             position: absolute;
             width: 150px;
             height: 150px;
-            fill: #004d1a;
+            fill: #143614;
             opacity: 0.6;
-            filter: drop-shadow(0 0 10px rgba(0, 155, 58, 0.3));
+            filter: drop-shadow(0 0 10px rgba(57, 255, 20, 0.2));
             z-index: 1;
         }
 
@@ -47,7 +48,6 @@
             transform: rotate(45deg);
             width: 250px;
             height: 250px;
-            fill: #1a4d1a;
         }
 
         .leaf-2 {
@@ -56,7 +56,7 @@
             transform: rotate(-30deg);
             width: 300px;
             height: 300px;
-            fill: #006622;
+            fill: #0a1f0a;
         }
 
         .leaf-3 {
@@ -65,7 +65,6 @@
             transform: rotate(180deg);
             width: 200px;
             height: 200px;
-            fill: #003311;
         }
 
         .leaf-4 {
@@ -83,7 +82,6 @@
             transform: rotate(90deg);
             width: 180px;
             height: 180px;
-            fill: #006622;
         }
 
         .leaf-6 {
@@ -92,7 +90,6 @@
             transform: rotate(-90deg);
             width: 220px;
             height: 220px;
-            fill: #1a4d1a;
         }
 
         .container {
@@ -101,13 +98,11 @@
             padding: 30px;
             background: rgba(255, 255, 255, 0.03);
             border-radius: 40px;
-            border: 1px solid rgba(252, 216, 38, 0.3);
+            border: 1px solid rgba(0, 255, 255, 0.2);
             box-shadow:
-                0 0 50px rgba(0, 0, 0, 0.9),
-                0 0 30px rgba(227, 43, 43, 0.2),
-                /* Red Glow */
-                inset 0 0 20px rgba(0, 155, 58, 0.1);
-            /* Green Inner Glow */
+                0 0 50px rgba(0, 0, 0, 0.8),
+                0 0 30px rgba(0, 255, 255, 0.1),
+                inset 0 0 20px rgba(255, 0, 255, 0.05);
             backdrop-filter: blur(10px);
             display: flex;
             flex-direction: column;
@@ -120,11 +115,7 @@
             letter-spacing: 5px;
             margin-bottom: 30px;
             font-size: 1.5rem;
-            /* Rasta Gradient Text */
-            background: linear-gradient(90deg, var(--rasta-green), var(--rasta-yellow), var(--rasta-red));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(252, 216, 38, 0.4);
+            text-shadow: 0 0 10px var(--neon-blue);
         }
 
         #qr-container {
@@ -132,16 +123,15 @@
             overflow: hidden;
             background: black;
             padding: 15px;
-            box-shadow: 0 0 25px rgba(252, 216, 38, 0.4);
-            /* Gold Glow */
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.3);
         }
 
         .glow-text {
             margin-top: 25px;
-            color: var(--rasta-yellow);
+            color: var(--neon-green);
             font-size: 0.8rem;
             letter-spacing: 2px;
-            text-shadow: 0 0 5px rgba(252, 216, 38, 0.8);
+            text-shadow: 0 0 5px rgba(57, 255, 20, 0.5);
         }
 
         .controls {
@@ -164,15 +154,14 @@
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
         }
 
-        button.rasta {
-            background: linear-gradient(45deg, #E32B2B, #FCD826, #009B3A);
-            color: white;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        button.neon {
+            background: linear-gradient(45deg, #00FFFF, #39FF14);
+            color: black;
         }
 
-        button.rasta:hover {
+        button.neon:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(252, 216, 38, 0.6);
+            box-shadow: 0 0 25px rgba(57, 255, 20, 0.6);
         }
     </style>
 </head>
@@ -214,7 +203,7 @@
     </div>
 
     <div class="controls">
-        <button class="rasta" onclick="downloadImage()">DOWNLOAD RASTA PNG</button>
+        <button class="neon" onclick="downloadImage()">DOWNLOAD PNG</button>
     </div>
 
     <script type="text/javascript">
@@ -243,11 +232,11 @@
                     type: "classy-rounded",
                     gradient: {
                         type: "linear",
-                        rotation: 90,
+                        rotation: 45,
                         colorStops: [
-                            { offset: 0, color: '#E32B2B' }, // Red (Top)
-                            { offset: 0.5, color: '#FCD826' }, // Gold (Middle)
-                            { offset: 1, color: '#009B3A' }  // Green (Bottom) 
+                            { offset: 0, color: '#00FFFF' }, // Cyan
+                            { offset: 0.5, color: '#39FF14' }, // Neon Green
+                            { offset: 1, color: '#FF00FF' }  // Magenta
                         ]
                     }
                 },
@@ -258,15 +247,15 @@
                     crossOrigin: "anonymous",
                     margin: 12,
                     imageSize: 0.35,
-                    saveAsBlob: true
+                    saveAsBlob: true // Ensure library handles it correctly
                 },
                 cornersSquareOptions: {
                     type: "extra-rounded",
-                    color: "#FCD826" // Gold Corners
+                    color: "#00FFFF"
                 },
                 cornersDotOptions: {
                     type: "dot",
-                    color: "#009B3A" // Green inner dots
+                    color: "#FF00FF"
                 },
                 qrOptions: {
                     errorCorrectionLevel: "H"
@@ -276,7 +265,7 @@
             qrCode.append(document.getElementById("qr-container"));
         }).catch(err => {
             console.error("Failed to load logo", err);
-            // Fallback
+            // Fallback without logo or with broken URL if fetch fails
             const qrCode = new QRCodeStyling({
                 width: 450,
                 height: 450,
@@ -287,18 +276,18 @@
                     type: "classy-rounded",
                     gradient: {
                         type: "linear",
-                        rotation: 90,
+                        rotation: 45,
                         colorStops: [
-                            { offset: 0, color: '#E32B2B' },
-                            { offset: 0.5, color: '#FCD826' },
-                            { offset: 1, color: '#009B3A' }
+                            { offset: 0, color: '#00FFFF' },
+                            { offset: 0.5, color: '#39FF14' },
+                            { offset: 1, color: '#FF00FF' }
                         ]
                     }
                 },
                 backgroundOptions: { color: "#000000" },
                 imageOptions: { crossOrigin: "anonymous", margin: 12, imageSize: 0.35 },
-                cornersSquareOptions: { type: "extra-rounded", color: "#FCD826" },
-                cornersDotOptions: { type: "dot", color: "#009B3A" },
+                cornersSquareOptions: { type: "extra-rounded", color: "#00FFFF" },
+                cornersDotOptions: { type: "dot", color: "#FF00FF" },
                 qrOptions: { errorCorrectionLevel: "H" }
             });
             qrCode.append(document.getElementById("qr-container"));
@@ -309,14 +298,14 @@
             // Slight delay to ensure SVG rendering is stable
             setTimeout(() => {
                 html2canvas(captureElement, {
-                    backgroundColor: "#050A0F", // Use the dark background
+                    backgroundColor: "#050A0F",
                     scale: 2, // High resolution
                     logging: true,
                     useCORS: true,
-                    allowTaint: true
+                    allowTaint: true // Try allowing taint since we base64'd the tricky part
                 }).then(canvas => {
                     const link = document.createElement('a');
-                    link.download = 'rasta-paradise-qr.png';
+                    link.download = 'neon-jungle-qr.png';
                     link.href = canvas.toDataURL("image/png");
                     link.click();
                 });

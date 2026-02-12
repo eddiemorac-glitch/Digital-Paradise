@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
     cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173' },
-    // namespace: 'notifications' // REMOVED: Frontend uses single default socket connection
+
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer()

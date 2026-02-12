@@ -1,4 +1,5 @@
 import { Controller, Post, Get, Delete, Body, Param, HttpCode, HttpStatus, UseGuards, Req } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, RegisterMerchantDto } from './dto/auth.dto';
 import { WebAuthnService } from './webauthn.service';
@@ -12,6 +13,7 @@ export class AuthController {
     ) { }
 
     @Post('register')
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
     register(@Body() registerDto: RegisterDto) {
         return this.authService.register(registerDto);
     }
@@ -22,6 +24,7 @@ export class AuthController {
     }
 
     @Post('login')
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
     @HttpCode(HttpStatus.OK)
     login(@Body() loginDto: LoginDto) {
         return this.authService.login(loginDto);
@@ -73,6 +76,7 @@ export class AuthController {
     }
 
     @Post('forgot-password')
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
     @HttpCode(HttpStatus.OK)
     forgotPassword(@Body('email') email: string) {
         return this.authService.forgotPassword(email);

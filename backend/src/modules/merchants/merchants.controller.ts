@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, Query, ParseUUIDPipe, Patch, UseGuards, Request, UseInterceptors, UploadedFile, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { CacheInterceptor } from '@nestjs/cache-manager';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { MerchantsService } from './merchants.service';
 import { MerchantStatus, MerchantCategory } from '../../shared/enums/merchant.enum';
@@ -56,6 +57,7 @@ export class MerchantsController {
     }
 
     @Get()
+    @UseInterceptors(CacheInterceptor)
     @UseGuards(new JwtAuthGuard(true)) // Optional guard (custom implementation needed or just use Request)
     async findAll(
         @Query('status') status?: MerchantStatus,
@@ -97,6 +99,7 @@ export class MerchantsController {
     }
 
     @Get(':id')
+    @UseInterceptors(CacheInterceptor)
     findOne(@Param('id', ParseUUIDPipe) id: string) {
         return this.merchantsService.findOne(id);
     }

@@ -14,6 +14,7 @@ export class Merchant extends BaseEntity {
     @Column({ nullable: true })
     userId: string;
 
+    @Index()
     @Column({ unique: true })
     name: string;
 
@@ -87,6 +88,7 @@ export class Merchant extends BaseEntity {
     @Column({ default: true })
     isActive: boolean;
 
+    @Index()
     @Column({ default: false })
     isSustainable: boolean;
 

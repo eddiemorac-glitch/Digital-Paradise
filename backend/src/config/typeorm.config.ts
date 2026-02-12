@@ -12,6 +12,8 @@ let config: TypeOrmModuleOptions;
 
 if (process.env.DATABASE_URL) {
     const dbUrl = new URL(process.env.DATABASE_URL);
+    const isProd = process.env.NODE_ENV === 'production';
+
     config = {
         type: 'postgres',
         host: dbUrl.hostname,
@@ -21,17 +23,20 @@ if (process.env.DATABASE_URL) {
         database: dbUrl.pathname.slice(1), // Remove leading slash
         entities,
         subscribers,
-        synchronize: true, // Force sync to fix missing tables
-        logging,
+        // CRITICAL: specific prod settings to prevent data loss
+        synchronize: process.env.DB_SYNCHRONIZE === 'true',
+        logging: process.env.DB_LOGGING === 'true' ? true : ['error', 'warn'],
         ssl: {
             rejectUnauthorized: false, // Required for Render
             servername: dbUrl.hostname, // SNI Requirement
-        } as any, // Cast to any to avoid TlsOptions type error
+        } as any,
         extra: {
             ssl: {
                 rejectUnauthorized: false,
                 servername: dbUrl.hostname,
             },
+            max: isProd ? 50 : 10, // Optimize connection pool
+            idleTimeoutMillis: 30000,
         },
     };
 } else {
@@ -44,8 +49,8 @@ if (process.env.DATABASE_URL) {
         database: process.env.DB_NAME || 'caribe_digital',
         entities,
         subscribers,
-        synchronize: true, // Force sync local
-        logging,
+        synchronize: true, // Dev mode: auto-sync allowed
+        logging: true,     // Dev mode: verbose logging
         ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
     };
 }

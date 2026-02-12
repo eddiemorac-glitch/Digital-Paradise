@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn, BaseEntity, Index } from 'typeorm';
 import { Merchant } from '../../merchants/entities/merchant.entity';
 import { Cabys } from './cabys.entity';
 
@@ -9,6 +9,7 @@ export class Product extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string;
 
+    @Index()
     @Column()
     name: string;
 
@@ -26,6 +27,7 @@ export class Product extends BaseEntity {
     @Column({ nullable: true })
     imageUrl: string;
 
+    @Index()
     @Column({ default: true })
     isAvailable: boolean;
 
@@ -35,9 +37,11 @@ export class Product extends BaseEntity {
     @Column({ default: false })
     isEco: boolean;
 
+    @Index()
     @Column({ nullable: true })
     category: string; // e.g., 'Entradas', 'Platos Fuertes', 'Bebidas'
 
+    @Index()
     @Column({ length: 13, nullable: true })
     cabysCode: string;
 
@@ -57,6 +61,7 @@ export class Product extends BaseEntity {
     @JoinColumn({ name: 'merchantId' })
     merchant: Merchant;
 
+    @Index()
     @Column()
     merchantId: string;
 
