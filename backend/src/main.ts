@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
+import { json, urlencoded } from 'express';
 import { AppModule } from './app.module';
 import { EmergencyAppModule } from './app.module.emergency';
 import { AllExceptionsFilter } from './shared/filters/all-exceptions.filter';
@@ -39,6 +40,10 @@ async function bootstrap() {
 
     const configService = app.get(ConfigService);
     app.setGlobalPrefix('api');
+
+    // Increase body limit to 50mb
+    app.use(json({ limit: '50mb' }));
+    app.use(urlencoded({ extended: true, limit: '50mb' }));
 
     // Enable Gzip compression
     app.use(require('compression')());

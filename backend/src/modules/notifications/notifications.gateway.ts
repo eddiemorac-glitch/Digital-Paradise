@@ -7,6 +7,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Logger } from '@nestjs/common';
+import { TokenService } from '../auth/token.service';
 
 @WebSocketGateway({
     cors: { origin: process.env.FRONTEND_URL || 'http://localhost:5173' },
@@ -16,14 +17,34 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     @WebSocketServer()
     server: Server;
 
+    constructor(private readonly tokenService: TokenService) { }
+
     private readonly logger = new Logger(NotificationsGateway.name);
     private userSockets = new Map<string, string>(); // userId -> socketId
 
-    handleConnection(client: Socket) {
-        const userId = client.handshake.query.userId as string;
-        if (userId) {
-            this.userSockets.set(userId, client.id);
-            this.logger.log(`Notification Socket Connected: User ${userId}`);
+    async handleConnection(client: Socket) {
+        try {
+            const token = client.handshake.auth?.token || client.handshake.headers?.authorization?.split(' ')[1];
+
+            if (!token) {
+                // this.logger.warn(`Client ${client.id} missing token. Disconnecting...`);
+                // client.disconnect();
+                // return; 
+                // Allow unauthenticated connections for now, but don't map them to a user
+                return;
+            }
+
+            const payload = this.tokenService.verifyAccessToken(token);
+            const userId = payload.sub;
+
+            if (userId) {
+                this.userSockets.set(userId, client.id);
+                this.logger.log(`Notification Socket Connected: User ${userId}`);
+            }
+        } catch (e) {
+            // Token invalid
+            // this.logger.warn(`Client ${client.id} invalid token. Disconnecting...`);
+            // client.disconnect();
         }
     }
 
