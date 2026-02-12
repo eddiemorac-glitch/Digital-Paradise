@@ -295,7 +295,11 @@ export const RootLayout = () => {
             </AnimatePresence>
 
             {/* Main Content Area */}
-            <main className="pt-24 sm:pt-32 px-3 sm:px-6 md:px-8 max-w-7xl mx-auto pb-24 lg:pb-0">
+            <main className={
+                location.pathname === '/'
+                    ? "w-full pb-24 lg:pb-0" // Home: Full width, no top padding, handles own layout
+                    : "pt-24 sm:pt-32 px-3 sm:px-6 md:px-8 max-w-7xl mx-auto pb-24 lg:pb-0" // Others: Standard constrained layout
+            }>
                 <Outlet context={{ setActiveMission }} />
             </main>
 
