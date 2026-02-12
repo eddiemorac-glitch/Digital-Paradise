@@ -39,7 +39,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
             <div className="flex items-center gap-2 md:gap-3 shrink-0">
                 <motion.img
                     src={logo}
-                    className="w-8 h-8 md:w-10 md:h-10 object-contain filter drop-shadow-[0_0_8px_rgba(0,255,102,0.4)]"
+                    className="w-9 h-9 md:w-10 md:h-10 object-contain filter drop-shadow-[0_0_8px_rgba(0,255,102,0.4)]"
                     animate={{ y: [0, -4, 0] }}
                     transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                     alt="Logo Tortuga"
@@ -47,11 +47,11 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                     style={{ cursor: 'pointer' }}
                 />
                 <span
-                    className="text-lg md:text-xl font-black tracking-tighter text-white hidden sm:block cursor-pointer"
+                    className="text-lg md:text-xl font-black tracking-tighter text-white hidden md:block cursor-pointer"
                     onClick={handleBackToHome}
                 >
                     DIGITAL<span className="text-primary">PARADISE</span>
-                    <span className="text-[8px] text-white/50 ml-1 font-mono">v2.3</span>
+                    <span className="text-[8px] text-white/50 ml-1 font-mono">v2.4</span>
                 </span>
             </div>
 
@@ -89,15 +89,15 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                 </Button>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                {/* Tactical Events Button - Hidden on small mobile to save space */}
+            <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+                {/* Tactical Events Button - Always visible now, optimized for mobile */}
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => {
                         playTacticalSound('CLICK');
                         navigate('/map');
                     }}
-                    className="hidden sm:flex bg-tactical-events px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap items-center justify-center mr-2"
+                    className="flex bg-tactical-events px-3 py-1.5 sm:px-6 sm:py-2 rounded-xl text-background font-black uppercase tracking-widest text-[9px] sm:text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap items-center justify-center mr-1"
                 >
                     {t('events')}
                 </motion.button>

@@ -1,4 +1,4 @@
 {
-    "version": "2.3.0",
-    "build": "layout-refactor"
+    "version": "2.4.0",
+    "build": "events-button-mobile"
 }
