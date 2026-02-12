@@ -15,8 +15,8 @@ import { LiveMap } from './LiveMap';
 import { EventHub } from './EventHub';
 import { DashboardSkeleton } from './DashboardSkeleton';
 import { playTacticalSound } from '../utils/tacticalSound';
-import { getStatusConfig } from '../utils/statusMapping';
 import { toast } from 'sonner';
+import { useLanguageStore } from '../store/languageStore';
 
 // Modular components
 import { EstadoRepartidor } from './logistics/EstadoRepartidor';
@@ -27,6 +27,7 @@ import { BolsaDePedidos } from './logistics/BolsaDePedidos';
 type LogisticsVertical = 'FOOD' | 'PARCEL' | 'RIDE';
 
 export const DeliveryDashboard = () => {
+    const { t, language } = useLanguageStore();
     const queryClient = useQueryClient();
     const [selectedVertical, setSelectedVertical] = useState<LogisticsVertical>('FOOD');
     const [isOnline, setIsOnline] = useState(false);
@@ -91,6 +92,20 @@ export const DeliveryDashboard = () => {
         if (!isOnline) return;
         socketService.joinLogisticsPool();
 
+        const handleNewMission = () => {
+            queryClient.invalidateQueries({ queryKey: ['available-deliveries'] });
+            playTacticalSound('ALERT');
+            toast.info(t('new_mission'));
+        };
+
+        const handleMissionUpdate = () => {
+            queryClient.invalidateQueries({ queryKey: ['my-deliveries'] });
+            queryClient.invalidateQueries({ queryKey: ['available-deliveries'] });
+        };
+
+        socketService.onMissionAvailable(handleNewMission);
+        socketService.onMissionUpdated(handleMissionUpdate);
+
         // Phase 38: Real Geolocation Tracking
         let watchId: number;
         if ('geolocation' in navigator) {
@@ -109,6 +124,11 @@ export const DeliveryDashboard = () => {
         }
 
         return () => {
+            const socket = socketService.getSocket();
+            if (socket) {
+                socket.off('mission_available', handleNewMission);
+                socket.off('mission_updated', handleMissionUpdate);
+            }
             if (watchId) navigator.geolocation.clearWatch(watchId);
         };
     }, [isOnline, myDeliveries]);
@@ -232,8 +252,8 @@ export const DeliveryDashboard = () => {
                     className="bg-orange-600 text-white p-6 rounded-full shadow-[0_15px_40px_rgba(255,100,0,0.4)] transition-all flex items-center gap-3 font-black uppercase tracking-tighter touch-target border border-white/20"
                 >
                     <Zap size={24} />
-                    <span className="hidden xs:inline">Eventos Semanales</span>
-                    <span className="xs:hidden">Eventos</span>
+                    <span className="hidden xs:inline">{t('weekly_events')}</span>
+                    <span className="xs:hidden">{t('events')}</span>
                 </motion.button>
                 <motion.button
                     whileTap={{ scale: 0.9, rotate: -5 }}
@@ -244,8 +264,8 @@ export const DeliveryDashboard = () => {
                     className="bg-primary text-background p-6 rounded-full shadow-[0_15px_40px_rgba(0,255,102,0.4)] transition-all flex items-center gap-3 font-black uppercase tracking-tighter touch-target border border-white/20"
                 >
                     {viewMode === 'HUD' ? <Globe size={24} /> : <LayoutDashboard size={24} />}
-                    <span className="hidden xs:inline">{viewMode === 'HUD' ? 'Mapa Táctico' : 'Panel HUD'}</span>
-                    <span className="xs:hidden">{viewMode === 'HUD' ? 'Mapa' : 'HUD'}</span>
+                    <span className="hidden xs:inline">{viewMode === 'HUD' ? t('tactical_map') : t('hud_panel')}</span>
+                    <span className="xs:hidden">{viewMode === 'HUD' ? t('map') : 'HUD'}</span>
                 </motion.button>
             </div>
 
@@ -261,8 +281,8 @@ export const DeliveryDashboard = () => {
                         onChatOpen={setActiveChat}
                     />
                     <div className="absolute top-8 left-8 z-[1001] glass p-4 rounded-2xl border-primary/20">
-                        <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-1">Modo Táctico</p>
-                        <h2 className="text-xl font-black italic uppercase tracking-tighter">{activeMissions.length} Misiones Activas</h2>
+                        <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-1">{t('tactical_mode')}</p>
+                        <h2 className="text-xl font-black italic uppercase tracking-tighter">{activeMissions.length} {t('active_missions')}</h2>
                     </div>
                 </div>
             ) : (
@@ -283,6 +303,7 @@ export const DeliveryDashboard = () => {
                         completedUnits={completedCount}
                         rating={stats?.profile?.rating || 5.0}
                         weeklyHistory={weeklyHistory}
+                        language={language}
                     />
 
                     {/* 3. MIS PEDIDOS */}
@@ -292,6 +313,7 @@ export const DeliveryDashboard = () => {
                         onLaunchMaps={handleLaunchMaps}
                         onUpdateStatus={(id, status, isFood) => updateStatusMutation.mutate({ id, status, isFood })}
                         onConfirmDelivery={handleConfirmDelivery}
+                        language={language}
                     />
 
                     {/* 4. BOLSA DE PEDIDOS */}
@@ -300,6 +322,7 @@ export const DeliveryDashboard = () => {
                             availableOrders={availableOrders || []}
                             onClaimMission={(id) => claimMutation.mutate(id)}
                             isClaiming={claimMutation.isPending}
+                            language={language}
                         />
                     )}
                 </div>
@@ -318,17 +341,17 @@ export const DeliveryDashboard = () => {
                                 <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
                                     <CheckCircle2 size={40} className="text-primary" />
                                 </div>
-                                <h3 className="text-2xl font-black uppercase tracking-tighter leading-none mb-2">VERIFICAR ENTREGA</h3>
-                                <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest px-4">Solicita el código OTP al cliente para finalizar la misión.</p>
+                                <h3 className="text-2xl font-black uppercase tracking-tighter leading-none mb-2">{t('verify_delivery')}</h3>
+                                <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest px-4">{t('otp_instruction')}</p>
                             </div>
                             <div className="space-y-4">
                                 <div className="bg-white/5 p-6 rounded-[2rem] border border-white/5 flex flex-col items-center justify-center gap-2 text-primary/60">
                                     <Zap size={24} className="animate-pulse" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Entrega Segura Activa</span>
+                                    <span className="text-[10px] font-black uppercase tracking-widest">{t('secure_delivery_active')}</span>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest text-center">Código de Entrega (OTP)</p>
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest text-center">{t('otp_label')}</p>
                                     <input
                                         type="text"
                                         maxLength={4}
@@ -340,8 +363,8 @@ export const DeliveryDashboard = () => {
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <button onClick={() => setPodModalMission(null)} className="flex-1 py-4 text-white/40 font-black uppercase text-[10px]">Cancelar</button>
-                                <button onClick={finalizeDelivery} className="flex-1 bg-primary text-background py-4 rounded-[1.5rem] font-black uppercase text-[10px] shadow-lg shadow-primary/20">FINALIZAR MISION</button>
+                                <button onClick={() => setPodModalMission(null)} className="flex-1 py-4 text-white/40 font-black uppercase text-[10px]">{t('cancel')}</button>
+                                <button onClick={finalizeDelivery} className="flex-1 bg-primary text-background py-4 rounded-[1.5rem] font-black uppercase text-[10px] shadow-lg shadow-primary/20">{t('finalize_mission')}</button>
                             </div>
                         </motion.div>
                     </div>
@@ -359,12 +382,12 @@ export const DeliveryDashboard = () => {
                         <div className="relative z-10 w-full max-w-2xl h-full md:h-[80vh] bg-background md:rounded-[3rem] md:border md:border-white/10 overflow-hidden flex flex-col shadow-2xl">
                             <OrderChat
                                 orderId={activeChat.id}
-                                partnerName={activeChat.user?.fullName || 'Cliente'}
+                                partnerName={activeChat.user?.fullName || t('client')}
                                 partnerRole="client"
                                 onClose={() => setActiveChat(null)}
                             />
                             <div className="p-4 bg-white/[0.02] border-t border-white/5 flex gap-2 overflow-x-auto scrollbar-hide">
-                                {['Ya llegué 📍', 'En camino 🛵', 'Mucha presa 🚦', '¿Dónde estás? ❓'].map(txt => (
+                                {[t('chat_arrived'), t('chat_on_way'), t('chat_traffic'), t('chat_where')].map(txt => (
                                     <button
                                         key={txt}
                                         className="px-4 py-2 bg-white/5 hover:bg-primary/20 hover:text-primary rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap border border-white/5 transition-all text-white/40 hover:border-primary/20 active:scale-90"

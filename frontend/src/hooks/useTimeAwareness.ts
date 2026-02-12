@@ -19,12 +19,12 @@ const getTimeOfDay = (hour: number): TimeOfDay => {
     return 'STEALTH';
 };
 
-const TIME_CONFIG: Record<TimeOfDay, { class: string; neon: number; hue: number; name: string }> = {
-    SUNRISE: { class: 'atmosphere-sunrise', neon: 0.6, hue: 30, name: 'Amanecer Caribeño' },
-    DAY: { class: 'atmosphere-day', neon: 0.4, hue: 0, name: 'Pleno Sol' },
-    GOLDEN: { class: 'atmosphere-golden', neon: 0.8, hue: 25, name: 'Hora Dorada' },
-    NIGHT: { class: 'atmosphere-night', neon: 1.0, hue: 240, name: 'Noche Tropical' },
-    STEALTH: { class: 'atmosphere-stealth', neon: 0.7, hue: 200, name: 'Modo Stealth' }
+const TIME_CONFIG: Record<TimeOfDay, { class: string; neon: number; hue: number; nameKey: string }> = {
+    SUNRISE: { class: 'atmosphere-sunrise', neon: 0.6, hue: 30, nameKey: 'time_sunrise' },
+    DAY: { class: 'atmosphere-day', neon: 0.4, hue: 0, nameKey: 'time_day' },
+    GOLDEN: { class: 'atmosphere-golden', neon: 0.8, hue: 25, nameKey: 'time_golden' },
+    NIGHT: { class: 'atmosphere-night', neon: 1.0, hue: 240, nameKey: 'time_night' },
+    STEALTH: { class: 'atmosphere-stealth', neon: 0.7, hue: 200, nameKey: 'time_stealth' }
 };
 
 export const useTimeAwareness = (): TimeAwarenessState => {
@@ -49,7 +49,7 @@ export const useTimeAwareness = (): TimeAwarenessState => {
             atmosphereClass: config.class,
             neonIntensity: config.neon,
             ambientHue: config.hue,
-            displayName: config.name
+            displayName: config.nameKey
         };
     }, [hour]);
 

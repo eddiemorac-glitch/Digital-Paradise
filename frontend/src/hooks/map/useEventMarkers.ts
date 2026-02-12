@@ -19,9 +19,11 @@ export const getEventMarkerHTML = (
     color: string,
     isHero: boolean,
     zoom: number,
+    t: (key: string) => string,
     isUrgent: boolean = false
 ): string => {
     const category = (event.category || event.type || 'other').toUpperCase();
+    const categoryLabel = t(category.toLowerCase()) || category;
 
     // Phase 22: Use Avatar if available, otherwise fallback to Neon Art
     let art = '';
@@ -77,10 +79,10 @@ export const getEventMarkerHTML = (
                     <div class="billboard-text">
                         <span class="text-label">${event.title}</span>
                         <div class="secondary-info">
-                            <span class="category-tag">${category}</span>
+                            <span class="category-tag">${categoryLabel}</span>
                             ${event.date ? `<span class="date-tag">${event.date}</span>` : ''}
                         </div>
-                        ${isGold ? '<span class="premium-tag">Evento VIP</span>' : ''}
+                        ${isGold ? `<span class="premium-tag">${t('vip_event')}</span>` : ''}
                     </div>
                 </div>
             </div>

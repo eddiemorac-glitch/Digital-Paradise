@@ -4,6 +4,7 @@ import { MapPin, Zap, X } from 'lucide-react';
 import { Event as EventData } from '../../types/event';
 import { useAddToCart } from '../../hooks/useAddToCart';
 import { MerchantConflictModal } from '../cart/MerchantConflictModal';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface EventOverlayProps {
     event: EventData;
@@ -16,6 +17,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({
     center,
     onClose
 }) => {
+    const { t } = useLanguageStore();
     const {
         handleAddToCart: onAddToCart,
         showConflictModal,
@@ -60,7 +62,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({
                 >
                     <div className="flex items-center justify-center gap-4">
                         <div className="h-px w-12 md:w-24 bg-gradient-to-r from-transparent to-primary" />
-                        <span className="text-primary font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[10px] md:text-xs">Evento Destacado</span>
+                        <span className="text-primary font-black uppercase tracking-[0.3em] md:tracking-[0.5em] text-[10px] md:text-xs">{t('featured_event')}</span>
                         <div className="h-px w-12 md:w-24 bg-gradient-to-l from-transparent to-primary" />
                     </div>
 
@@ -87,12 +89,12 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({
                         {event.isEcoFriendly && (
                             <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-[9px] font-bold uppercase tracking-widest flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse" />
-                                Eco Friendly
+                                {t('eco_friendly')}
                             </span>
                         )}
                         {event.attendees > 0 && (
                             <span className="px-3 py-1 bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded-full text-[9px] font-bold uppercase tracking-widest">
-                                {event.attendees.toLocaleString()}{event.maxCapacity ? ` / ${event.maxCapacity.toLocaleString()}` : ''} Asistentes
+                                {event.attendees.toLocaleString()}{event.maxCapacity ? ` / ${event.maxCapacity.toLocaleString()}` : ''} {t('attendees')}
                             </span>
                         )}
                     </div>
@@ -117,7 +119,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({
                                 className={`w-full md:w-auto px-6 py-4 md:px-12 md:py-5 text-background rounded-2xl font-black uppercase tracking-[0.2em] md:tracking-[0.3em] text-[10px] md:text-xs shadow-[0_0_50px_rgba(0,255,102,0.3)] transition-all flex items-center justify-center gap-4 ${event.adTier === 'GOLD' ? 'bg-amber-500 shadow-amber-500/30' : 'bg-primary shadow-primary/30'}`}
                             >
                                 <Zap size={16} fill="currentColor" />
-                                COMPRAR ENTRADA — ₡{event.price.toLocaleString()}
+                                {t('buy_ticket_btn')} — ₡{event.price.toLocaleString()}
                             </motion.button>
                         </div>
                     )}

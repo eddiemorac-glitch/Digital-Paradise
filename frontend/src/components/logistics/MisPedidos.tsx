@@ -1,158 +1,146 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Zap, Bike, Package, MessageSquare, MapPin, Navigation, ChevronRight, CheckCircle2, ThermometerSun, AlertTriangle, DollarSign, Route } from 'lucide-react';
-import { Mission } from '../../types/logistics';
-import { getStatusConfig } from '../../utils/statusMapping';
+import {
+    MapPin, Navigation, MessageCircle, CheckCircle2, Package, Clock, Flame, AlertTriangle
+} from 'lucide-react';
+import { formatCurrency } from '../../utils/currency';
+import { playTacticalSound } from '../../utils/tacticalSound';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MisPedidosProps {
-    activeMissions: Mission[];
-    onOpenChat: (mission: Mission) => void;
+    activeMissions: any[];
+    onOpenChat: (mission: any) => void;
     onLaunchMaps: (lat: number, lng: number) => void;
     onUpdateStatus: (id: string, status: string, isFood: boolean) => void;
-    onConfirmDelivery: (mission: Mission) => void;
-    language?: string;
+    onConfirmDelivery: (mission: any) => void;
+    language: 'es' | 'en';
 }
 
-export const MisPedidos: React.FC<MisPedidosProps> = ({
+export const MisPedidos = ({
     activeMissions,
     onOpenChat,
     onLaunchMaps,
     onUpdateStatus,
     onConfirmDelivery,
-    language = 'es'
-}) => {
-    return (
-        <section className="space-y-4">
-            <div className="flex items-center justify-between px-2">
-                <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
-                    <Zap size={18} className="text-primary fill-primary" />
-                    {language === 'es' ? 'Pedidos en curso' : 'Active Routes'}
-                </h2>
-                <div className="px-3 py-1 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-[10px] font-black text-primary">
-                    {activeMissions.length}
-                </div>
-            </div>
+    language
+}: MisPedidosProps) => {
+    const { t } = useLanguageStore();
 
-            <AnimatePresence mode="popLayout">
-                {activeMissions.map((mission: Mission) => (
-                    <motion.div
-                        key={mission.id}
-                        layout
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="glass overflow-hidden rounded-[2.5rem] border-primary/20 bg-primary/[0.02] relative group shadow-[0_0_50px_rgba(0,0,0,0.3)]"
-                    >
-                        <div className="p-6 space-y-6 relative z-20">
-                            {/* Header: Status & Info */}
-                            <div className="flex justify-between items-start">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-14 h-14 rounded-2xl bg-primary/20 flex items-center justify-center text-primary shadow-inner border border-primary/10">
-                                        {mission.type === 'FOOD' || mission.merchantId ? <Bike size={28} /> : <Package size={28} />}
+    if (activeMissions.length === 0) return (
+        <div className="flex flex-col items-center justify-center p-12 text-white/20 gap-4 border border-white/5 rounded-[2.5rem] bg-white/[0.02]">
+            <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full animate-pulse" />
+                <Navigation size={48} className="relative z-10 animate-spin-slow" />
+            </div>
+            <p className="font-bold uppercase tracking-widest text-[10px] animate-pulse">{t('scanning_missions')}</p>
+        </div>
+    );
+
+    return (
+        <div className="space-y-6">
+            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                <Navigation size={20} className="text-primary animate-pulse" />
+                {t('active_routes')} ({activeMissions.length})
+            </h2>
+
+            <div className="grid gap-4">
+                <AnimatePresence>
+                    {activeMissions.map((mission) => (
+                        <motion.div
+                            key={mission.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="glass p-6 rounded-[2rem] border-primary/20 relative overflow-hidden group"
+                        >
+                            {/* LIVE STATUS BAR */}
+                            <div className={`absolute top-0 left-0 w-full h-1 ${mission.status === 'READY' ? 'bg-green-500 animate-pulse' : 'bg-primary animate-pulse'}`} />
+
+                            <div className="flex justify-between items-start mb-6">
+                                <div>
+                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full mb-2 ${mission.status === 'READY' ? 'bg-green-500/20 text-green-400' : 'bg-primary/20 text-primary'}`}>
+                                        <div className={`w-2 h-2 rounded-full ${mission.status === 'READY' ? 'bg-green-500' : 'bg-primary'} animate-pulse`} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">
+                                            {mission.status === 'READY'
+                                                ? t('ready_pickup')
+                                                : t('en_route')}
+                                        </span>
                                     </div>
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <p className="text-[9px] font-black text-primary uppercase tracking-tighter italic">
-                                                {mission.status === 'READY' ? (language === 'es' ? 'LISTO PARA RECOGER' : 'READY TO PICKUP') : (language === 'es' ? 'EN CAMINO AL CLIENTE' : 'EN ROUTE')}
-                                            </p>
-                                            <span className={`px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-widest ${getStatusConfig(mission.status).color} ${getStatusConfig(mission.status).bg} ${getStatusConfig(mission.status).border}`}>
-                                                {getStatusConfig(mission.status, language).currentLabel}
-                                            </span>
-                                        </div>
-                                        <h3 className="text-xl font-black leading-none uppercase truncate max-w-[150px]">
-                                            {mission.merchant?.name || (language === 'es' ? 'Pedido Privado' : 'Private Parcel')}
-                                        </h3>
-                                    </div>
+                                    <h3 className="text-lg font-black uppercase leading-none mb-1">
+                                        {mission.merchant?.name || t('private_parcel')}
+                                    </h3>
+                                    <p className="text-white/40 text-[10px] uppercase font-bold tracking-widest flex items-center gap-2">
+                                        <Clock size={10} />
+                                        {mission.estimatedTime || '15-20'} {t('minutes_label')} • {formatCurrency(mission.deliveryFee)}
+                                    </p>
                                 </div>
+                                <div className="flex gap-2">
+                                    {mission.isHot && (
+                                        <div className="bg-orange-500/20 p-2 rounded-full text-orange-500" title={t('tag_hot')}>
+                                            <Flame size={16} />
+                                        </div>
+                                    )}
+                                    {mission.isFragile && (
+                                        <div className="bg-purple-500/20 p-2 rounded-full text-purple-500" title={t('tag_fragile')}>
+                                            <AlertTriangle size={16} />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* ACTIONS GRID */}
+                            <div className="grid grid-cols-4 gap-2">
+                                <button
+                                    onClick={() => onLaunchMaps(mission.targetLat || 9.65, mission.targetLng || -82.75)}
+                                    className="col-span-1 bg-white/5 hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all group/btn"
+                                >
+                                    <Navigation size={20} className="group-hover/btn:scale-110 transition-transform text-primary" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">Waze</span>
+                                </button>
+
                                 <button
                                     onClick={() => onOpenChat(mission)}
-                                    className="w-14 h-14 glass rounded-2xl flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all relative group"
+                                    className="col-span-1 bg-white/5 hover:bg-white/10 p-4 rounded-2xl flex flex-col items-center justify-center gap-2 transition-all relative"
                                 >
-                                    <MessageSquare size={28} />
-                                    <span className="absolute top-0 right-0 w-3.5 h-3.5 bg-red-500 rounded-full border-4 border-[#0F1115] group-hover:animate-bounce" />
+                                    {mission.unreadCount > 0 && (
+                                        <div className="absolute top-2 right-2 w-3 h-3 bg-red-500 rounded-full border-2 border-background animate-bounce" />
+                                    )}
+                                    <MessageCircle size={20} className="text-blue-400" />
+                                    <span className="text-[8px] font-black uppercase tracking-widest">Chat</span>
                                 </button>
-                            </div>
 
-                            {/* Tactical HUD: Earnings + Distance + Handling */}
-                            <div className="grid grid-cols-4 gap-2">
-                                <div className="bg-primary/10 p-3 rounded-2xl border border-primary/20 flex flex-col items-center justify-center gap-1">
-                                    <DollarSign size={14} className="text-primary" />
-                                    <span className="text-[9px] font-black text-primary">₡{(Number(mission.estimatedPrice) || Number(mission.courierEarnings) || 1500).toLocaleString()}</span>
-                                </div>
-                                <div className="bg-white/5 p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-1">
-                                    <Route size={14} className="text-blue-400" />
-                                    <span className="text-[8px] font-black uppercase opacity-40">{(Number(mission.estimatedDistanceKm) || 3.2).toFixed(1)} KM</span>
-                                </div>
-                                <div className="bg-white/5 p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-1">
-                                    <ThermometerSun size={14} className="text-orange-400" />
-                                    <span className="text-[8px] font-black uppercase opacity-40">CALIENTE</span>
-                                </div>
-                                <div className="bg-white/5 p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center gap-1">
-                                    <AlertTriangle size={14} className="text-yellow-400" />
-                                    <span className="text-[8px] font-black uppercase opacity-40">FRÁGIL</span>
-                                </div>
-                            </div>
-
-                            {/* Destination Detail */}
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-4 p-5 bg-white/5 rounded-3xl border border-white/5 relative group overflow-hidden">
-                                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                                        <MapPin size={22} />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-[8px] font-black text-white/20 uppercase mb-1 tracking-widest">{language === 'es' ? 'Punto de Entrega' : 'Delivery Point'}</p>
-                                        <p className="text-xs font-bold leading-tight line-clamp-2">
-                                            {mission.destinationAddress || mission.merchant?.address}
-                                        </p>
-                                    </div>
+                                {mission.status === 'ON_WAY' ? (
                                     <button
-                                        onClick={() => onLaunchMaps(
-                                            Number(mission.destinationLat || mission.merchant?.latitude),
-                                            Number(mission.destinationLng || mission.merchant?.longitude)
-                                        )}
-                                        className="bg-primary text-background p-4 rounded-2xl hover:scale-110 active:scale-90 transition-all shadow-xl shadow-primary/20"
+                                        onClick={() => {
+                                            playTacticalSound('SUCCESS');
+                                            onConfirmDelivery(mission);
+                                        }}
+                                        className="col-span-2 bg-primary text-background hover:bg-primary/90 p-4 rounded-2xl flex items-center justify-center gap-2 transition-all font-black uppercase tracking-tighter shadow-[0_0_20px_rgba(0,255,102,0.3)] animate-shimmer bg-[linear-gradient(110deg,transparent,rgba(255,255,255,0.4),transparent)] bg-[length:200%_100%]"
                                     >
-                                        <Navigation size={24} fill="currentColor" />
+                                        <CheckCircle2 size={20} />
+                                        <span>{t('verify_delivery')}</span>
                                     </button>
-                                </div>
-                            </div>
-
-                            {/* Main Action Bar */}
-                            <div className="grid grid-cols-1 gap-3">
-                                {mission.status === 'READY' && (
+                                ) : (
                                     <button
-                                        onClick={() => onUpdateStatus(mission.id, 'ON_WAY', true)}
-                                        className="w-full bg-white text-background h-20 rounded-[2rem] font-black text-lg uppercase tracking-[0.2em] flex items-center justify-center gap-4 active:scale-95 transition-all shadow-2xl"
+                                        onClick={() => onUpdateStatus(mission.id, 'ON_WAY', !!mission.merchantId)}
+                                        className="col-span-2 bg-white/10 hover:bg-white/20 text-white p-4 rounded-2xl flex items-center justify-center gap-2 transition-all font-black uppercase tracking-tighter border border-white/5"
                                     >
-                                        {language === 'es' ? 'RECOGER PEDIDO' : 'PICKUP ORDER'}
-                                        <ChevronRight size={28} />
-                                    </button>
-                                )}
-                                {mission.status === 'ON_WAY' && (
-                                    <button
-                                        onClick={() => onConfirmDelivery(mission)}
-                                        className="w-full bg-primary text-background h-20 rounded-[2rem] font-black text-lg uppercase tracking-[0.2em] flex items-center justify-center gap-4 active:scale-95 transition-all shadow-2xl shadow-primary/30"
-                                    >
-                                        {language === 'es' ? 'COMPLETAR ENTREGA' : 'FINISH TRICK'}
-                                        <CheckCircle2 size={28} />
+                                        <Package size={20} />
+                                        <span>{t('en_route')}</span>
                                     </button>
                                 )}
                             </div>
-                        </div>
-                    </motion.div>
-                ))}
-            </AnimatePresence>
 
-            {activeMissions.length === 0 && (
-                <div className="glass p-16 rounded-[3rem] border-white/5 bg-white/[0.01] text-center space-y-4">
-                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto opacity-10">
-                        <Navigation size={40} />
-                    </div>
-                    <p className="text-xs font-black uppercase tracking-[0.3em] text-white/20 italic">
-                        {language === 'es' ? 'Buscando misiones cerca...' : 'Scanning for orders...'}
-                    </p>
-                </div>
-            )}
-        </section>
+                            {/* ADDRESS PREVIEW */}
+                            <div className="mt-4 pt-4 border-t border-white/5 flex items-start gap-3 opacity-60">
+                                <MapPin size={14} className="mt-0.5 text-primary" />
+                                <p className="text-[10px] font-mono leading-relaxed">
+                                    <span className="text-primary font-bold">{t('delivery_point')}:</span> {mission.address || 'Puerto Viejo Centro, Limón'}
+                                </p>
+                            </div>
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
+            </div>
+        </div>
     );
 };

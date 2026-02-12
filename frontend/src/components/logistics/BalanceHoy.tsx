@@ -1,106 +1,62 @@
-import React from 'react';
-import { DollarSign, PackageCheck, Star, TrendingUp } from 'lucide-react';
-import { BarChart, Bar, XAxis, ResponsiveContainer, Cell, Tooltip } from 'recharts';
+import { motion } from 'framer-motion';
+import { TrendingUp, Award, Clock } from 'lucide-react';
+import { formatCurrency } from '../../utils/currency';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface BalanceHoyProps {
     dailyEarnings: number;
     completedUnits: number;
     rating: number;
-    weeklyHistory: { date: string, earnings: number, deliveries: number }[];
-    language?: string;
+    weeklyHistory: any[];
+    language: 'es' | 'en';
 }
 
-export const BalanceHoy: React.FC<BalanceHoyProps> = ({
-    dailyEarnings,
-    completedUnits,
-    rating,
-    weeklyHistory,
-    language = 'es'
-}) => {
-    // Format day labels for simple users (just the day name)
-    const chartData = weeklyHistory.map(item => {
-        const d = new Date(item.date);
-        const dayName = d.toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', { weekday: 'short' });
-        return {
-            ...item,
-            displayDate: dayName.toUpperCase()
-        };
-    });
+export const BalanceHoy = ({ dailyEarnings, completedUnits, rating, weeklyHistory, language }: BalanceHoyProps) => {
+    const { t } = useLanguageStore();
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* KPI GRID */}
-            <div className="grid grid-cols-2 gap-3">
-                <div className="glass p-5 rounded-[2rem] border-primary/20 bg-primary/5">
-                    <div className="flex items-center gap-2 mb-2 text-primary opacity-60">
-                        <DollarSign size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{language === 'es' ? 'Hoy' : 'Today'}</span>
-                    </div>
-                    <p className="text-3xl font-black italic tracking-tighter">₡{dailyEarnings.toLocaleString()}</p>
-                </div>
-
-                <div className="glass p-5 rounded-[2rem] border-white/10 bg-white/5">
-                    <div className="flex items-center gap-2 mb-2 text-white opacity-40">
-                        <PackageCheck size={14} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">{language === 'es' ? 'Entregas' : 'Deliveries'}</span>
-                    </div>
-                    <p className="text-3xl font-black italic tracking-tighter">{completedUnits}</p>
-                </div>
-
-                <div className="col-span-2 glass p-5 rounded-[2.5rem] border-orange-500/20 bg-orange-500/5 flex items-center justify-between">
-                    <div>
-                        <div className="flex items-center gap-2 mb-2 text-orange-400 opacity-60">
-                            <Star size={14} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">{language === 'es' ? 'Mi Perfil' : 'Profile'}</span>
+        <div className="glass p-8 rounded-[2.5rem] border-primary/20 relative overflow-hidden">
+            <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center justify-between">
+                <div className="text-center md:text-left">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-2">{t('today')}</p>
+                    <h2 className="text-5xl font-black italic tracking-tighter text-primary drop-shadow-[0_0_15px_rgba(0,255,102,0.4)]">
+                        {formatCurrency(dailyEarnings)}
+                    </h2>
+                    <div className="flex items-center gap-4 mt-4 justify-center md:justify-start">
+                        <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                            <TrendingUp size={14} className="text-primary" />
+                            <span className="text-[10px] font-bold uppercase text-white/60">{completedUnits} {t('deliveries')}</span>
                         </div>
-                        <p className="text-3xl font-black italic tracking-tighter">{rating.toFixed(1)} <span className="text-xs opacity-40 font-bold uppercase italic">puntos</span></p>
-                    </div>
-                    <div className="w-16 h-16 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-400 border border-orange-500/20">
-                        <TrendingUp size={28} />
+                        <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-full border border-white/10">
+                            <Award size={14} className="text-yellow-500" />
+                            <span className="text-[10px] font-bold uppercase text-white/60">{rating.toFixed(1)} {t('my_profile')}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* WEEKLY CHART */}
-            <div className="glass p-6 rounded-[2.5rem] border-white/5 bg-white/[0.02]">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/20 mb-6 px-2">
-                    {language === 'es' ? 'Rendimiento Semanal' : 'Weekly Effort'}
-                </p>
-
-                <div className="h-40 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
-                            <Tooltip
-                                cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        return (
-                                            <div className="glass p-3 border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest">
-                                                <p className="text-white mb-1">{payload[0].payload.displayDate}</p>
-                                                <p className="text-primary">₡{payload[0].value?.toLocaleString()}</p>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                }}
-                            />
-                            <Bar dataKey="earnings" radius={[4, 4, 0, 0]}>
-                                {chartData.map((_, index) => (
-                                    <Cell
-                                        key={`cell-${index}`}
-                                        fill={index === chartData.length - 1 ? '#00FF66' : 'rgba(255,255,255,0.1)'}
-                                    />
-                                ))}
-                            </Bar>
-                            <XAxis
-                                dataKey="displayDate"
-                                axisLine={false}
-                                tickLine={false}
-                                tick={{ fontSize: 8, fontWeight: 900, opacity: 0.3, fill: '#fff' }}
-                                interval={0}
-                            />
-                        </BarChart>
-                    </ResponsiveContainer>
+                {/* GRAPH VISUALIZATION */}
+                <div className="w-full md:w-1/2 h-32 flex items-end justify-between gap-2 px-4 border-l border-white/5">
+                    {weeklyHistory.length > 0 ? (
+                        weeklyHistory.map((day, i) => (
+                            <div key={i} className="flex flex-col items-center gap-2 flex-1 relative group">
+                                <motion.div
+                                    initial={{ height: 0 }}
+                                    animate={{ height: `${(day.amount / 50000) * 100}%` }}
+                                    className="w-full bg-primary/20 rounded-t-lg relative group-hover:bg-primary/40 transition-all border-t border-x border-primary/30"
+                                >
+                                    <div className="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] font-black bg-black/80 px-2 py-1 rounded text-primary whitespace-nowrap z-20">
+                                        {formatCurrency(day.amount)}
+                                    </div>
+                                </motion.div>
+                                <span className="text-[8px] font-bold uppercase text-white/20">{day.label}</span>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-white/20 gap-2">
+                            <Clock size={24} />
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-center">{t('weekly_performance')}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

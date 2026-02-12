@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CATEGORIES } from '../../constants/map-categories';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MapFilterBarProps {
     activeCategories: string[] | null;
@@ -11,6 +12,8 @@ export const MapFilterBar: React.FC<MapFilterBarProps> = ({
     activeCategories,
     onToggleCategory
 }) => {
+    const { t } = useLanguageStore();
+
     return (
         <div className="hidden md:flex absolute md:top-20 md:left-4 md:bottom-auto md:w-auto md:right-auto z-[1001] flex flex-row md:flex-col gap-2 bottom-0 left-0 right-0 p-4 overflow-x-auto touch-pan-x scrollbar-hide">
             {CATEGORIES.map((cat) => {
@@ -30,7 +33,7 @@ export const MapFilterBar: React.FC<MapFilterBarProps> = ({
                         `}
                     >
                         <span className="text-base md:text-lg">{cat.icon}</span>
-                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">{cat.label}</span>
+                        <span className="text-[10px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap">{t(cat.id.toLowerCase()) || cat.label}</span>
                         {isActive && (
                             <motion.div
                                 layoutId="active-dot"

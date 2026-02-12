@@ -5,6 +5,8 @@ import { Event as EventData } from '../../types/event';
 import { EVENT_TYPE_CONFIG, getEventTypeFromCategory } from '../../types/event-type-config';
 import { getEventMarkerHTML } from '../../hooks/map/useEventMarkers';
 
+import { useLanguageStore } from '../../store/languageStore';
+
 interface SingleEventMarkerProps {
     event: EventData;
     lat: number;
@@ -24,6 +26,7 @@ export const SingleEventMarker = React.memo(({
     onSelect,
     onHover
 }: SingleEventMarkerProps) => {
+    const { t } = useLanguageStore();
 
     // Memoize the icon creation so it doesn't run on every render unless visual props change
     const icon = useMemo(() => {
@@ -35,13 +38,13 @@ export const SingleEventMarker = React.memo(({
         const isUrgent = (event as any).isUrgent || false;
 
         return L.divIcon({
-            html: getEventMarkerHTML(event, color, isHero, zoom, isUrgent),
+            html: getEventMarkerHTML(event, color, isHero, zoom, t, isUrgent),
             className: 'custom-div-icon event-marker-system',
             iconSize: [0, 0],
             iconAnchor: [0, 0],
             popupAnchor: [0, -20]
         });
-    }, [event, isHero, zoom]);
+    }, [event, isHero, zoom, t]);
 
     return (
         <Marker

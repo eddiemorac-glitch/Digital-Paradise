@@ -1,93 +1,95 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Zap, MapPin } from 'lucide-react';
-import { Mission } from '../../types/logistics';
+import {
+    MapPin, Clock, Package, Utensils, Navigation
+} from 'lucide-react';
+import { formatCurrency } from '../../utils/currency';
+import { playTacticalSound } from '../../utils/tacticalSound';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface BolsaDePedidosProps {
-    availableOrders: Mission[];
+    availableOrders: any[];
     onClaimMission: (id: string) => void;
     isClaiming: boolean;
-    language?: string;
+    language: 'es' | 'en';
 }
 
-export const BolsaDePedidos: React.FC<BolsaDePedidosProps> = ({
-    availableOrders,
-    onClaimMission,
-    isClaiming,
-    language = 'es'
-}) => {
+export const BolsaDePedidos = ({ availableOrders, onClaimMission, isClaiming, language }: BolsaDePedidosProps) => {
+    const { t } = useLanguageStore();
+
     if (!availableOrders || availableOrders.length === 0) return null;
 
     return (
-        <section className="space-y-6 pt-10 border-t border-white/5">
-            <div className="flex items-center justify-between px-2">
-                <h2 className="text-xl font-black uppercase italic tracking-tighter flex items-center gap-2">
-                    <Zap size={18} className="text-primary fill-primary animate-pulse" />
-                    {language === 'es' ? 'Bolsa de Pedidos' : 'Order Pool'}
-                </h2>
-                <div className="flex items-center gap-2 text-[10px] font-black text-white/40 uppercase tracking-widest">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                    {language === 'es' ? 'EN VIVO' : 'LIVE'}
-                </div>
-            </div>
+        <div className="space-y-6">
+            <h2 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                <Package size={20} className="text-orange-500" />
+                {t('order_pool')} <span className="bg-orange-500 text-white px-2 py-0.5 rounded text-[10px] animate-pulse">{t('live_tag')}</span>
+            </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <AnimatePresence mode="popLayout">
-                    {availableOrders.map((mission: Mission) => (
+            <div className="grid gap-4">
+                <AnimatePresence>
+                    {availableOrders.map((order) => (
                         <motion.div
-                            key={mission.id}
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className="glass p-6 rounded-[2.5rem] border-white/10 hover:border-primary/40 transition-all group relative overflow-hidden"
+                            key={order.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="bg-white/[0.03] backdrop-blur-md p-6 rounded-[2rem] border border-white/5 relative overflow-hidden hover:bg-white/[0.05] transition-colors group"
                         >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-3xl pointer-events-none" />
+                            {/* TACTICAL CORNERS */}
+                            <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-primary/20 rounded-tr-2xl" />
+                            <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-primary/20 rounded-bl-2xl" />
 
-                            <div className="flex justify-between items-start relative z-10">
-                                <div className="flex-1 min-w-0 pr-4">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="px-3 py-1 rounded-full bg-white/5 text-white/60 text-[8px] font-black uppercase tracking-widest border border-white/5">
-                                            {mission.type === 'FOOD_DELIVERY' ? (language === 'es' ? 'Comida' : 'Food') : (language === 'es' ? 'Paquete' : 'Parcel')}
-                                        </div>
-                                        <div className="text-primary text-[10px] font-black uppercase tracking-tighter italic">
-                                            ₡{(mission.estimatedPrice || 1500).toLocaleString()} {language === 'es' ? 'Ganancia' : 'Take'}
-                                        </div>
+                            <div className="flex justify-between items-start mb-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                        {order.type === 'FOOD' ? <Utensils size={20} /> : <Package size={20} />}
                                     </div>
-
-                                    <h4 className="text-lg font-black uppercase truncate text-white mb-1">
-                                        {mission.merchant?.name || mission.restaurantName || (language === 'es' ? 'Pedido Privado' : 'Private Order')}
-                                    </h4>
-
-                                    <div className="flex items-start gap-1.5 opacity-40">
-                                        <MapPin size={10} className="mt-0.5" />
-                                        <p className="text-[10px] font-bold uppercase truncate max-w-[200px]">
-                                            {mission.merchant?.address || mission.originAddress}
-                                        </p>
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-black uppercase bg-white/10 px-2 py-0.5 rounded text-white/60">
+                                                {order.type === 'FOOD' ? t('type_food') : t('type_parcel')}
+                                            </span>
+                                            <span className="text-[9px] font-black uppercase bg-primary/10 px-2 py-0.5 rounded text-primary">
+                                                +{formatCurrency(order.deliveryFee)} {t('earnings_label')}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-lg font-black uppercase mt-1 leading-none">
+                                            {order.merchant?.name || t('private_order')}
+                                        </h3>
                                     </div>
                                 </div>
-
-                                <button
-                                    disabled={isClaiming}
-                                    onClick={() => onClaimMission(mission.id)}
-                                    className="bg-primary hover:scale-110 active:scale-95 text-background p-6 rounded-3xl transition-all shadow-xl shadow-primary/20 flex items-center justify-center disabled:opacity-50 disabled:scale-100"
-                                >
-                                    <Plus size={32} strokeWidth={3} />
-                                </button>
                             </div>
 
-                            {/* Flashy detail: Distance or Time if available */}
-                            <div className="mt-4 pt-4 border-t border-white/5 flex gap-4">
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20">
-                                    <span className="text-white">~{mission.estimatedMinutes || 30}</span> {language === 'es' ? 'MINUTOS' : 'MINS'}
-                                </div>
-                                <div className="text-[8px] font-black uppercase tracking-widest text-white/20">
-                                    <span className="text-white">~{(mission.estimatedDistanceKm || 3.2).toFixed(1)}</span> {language === 'es' ? 'KM' : 'KM'}
-                                </div>
+                            <div className="flex items-center gap-4 text-white/40 mb-6 font-mono text-xs">
+                                <span className="flex items-center gap-1.5">
+                                    <Clock size={12} />
+                                    ~25 {t('minutes_label')}
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <Navigation size={12} />
+                                    2.4 {t('km_label')}
+                                </span>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        playTacticalSound('CLAIM');
+                                        onClaimMission(order.id);
+                                    }}
+                                    disabled={isClaiming}
+                                    className="flex-1 bg-white text-black py-4 rounded-2xl font-black uppercase tracking-tighter hover:scale-[1.02] active:scale-95 transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] disabled:opacity-50 disabled:pointer-events-none"
+                                >
+                                    {isClaiming ? '...' : t('earnings_label')}
+                                </button>
+                                <button className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 transition-colors border border-white/10">
+                                    <MapPin size={20} className="text-white/60" />
+                                </button>
                             </div>
                         </motion.div>
                     ))}
                 </AnimatePresence>
             </div>
-        </section>
+        </div>
     );
 };

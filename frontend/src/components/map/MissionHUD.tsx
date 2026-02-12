@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bike, Package, MessageSquare, ChevronRight, CheckCircle2, MapPin, X, Navigation, Target } from 'lucide-react';
 import { MissionData } from '../../types/map';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MissionHUDProps {
     mission: MissionData;
@@ -22,6 +23,8 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
     isFixed,
     onToggleFixed
 }) => {
+    const { t } = useLanguageStore();
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -45,10 +48,10 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                     </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-[10px] font-black text-primary uppercase italic mb-1 tracking-tighter">
-                            Misión Activa: {mission.status}
+                            {t('active_mission')}: {t(`status_${mission.status.toLowerCase()}`) || mission.status}
                         </p>
                         <h3 className="text-xl font-black uppercase tracking-tighter truncate leading-none">
-                            {mission.merchant?.name || "Misión Privada"}
+                            {mission.merchant?.name || t('private_mission')}
                         </h3>
                     </div>
                     <div className="flex gap-2 items-center">
@@ -58,7 +61,7 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                                 onToggleFixed?.();
                             }}
                             className={`p-2 rounded-xl transition-all border ${isFixed ? 'bg-primary text-black border-primary shadow-[0_0_10px_var(--primary)]' : 'bg-white/5 text-white/20 border-white/5 hover:text-white hover:bg-white/10'}`}
-                            title={isFixed ? "Soltar Cámara" : "Fijar Cámara en Destino"}
+                            title={isFixed ? t('release_camera') : t('fix_camera')}
                         >
                             <Target size={20} className={isFixed ? "animate-pulse" : ""} />
                         </button>
@@ -71,14 +74,14 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                     <div className="flex items-center gap-3 p-4 bg-white/5 rounded-2xl border border-white/5">
                         <MapPin size={18} className="text-primary" />
                         <div className="flex-1 overflow-hidden">
-                            <p className="text-[8px] font-black text-white/20 uppercase">Destino</p>
+                            <p className="text-[8px] font-black text-white/20 uppercase">{t('destination')}</p>
                             <p className="text-xs font-bold truncate">{mission.destinationAddress}</p>
                         </div>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => onChatOpen?.(mission)}
                                 className="p-3 glass rounded-xl text-primary"
-                                title="Abrir Chat"
+                                title={t('open_chat')}
                             >
                                 <MessageSquare size={18} />
                             </button>
@@ -88,7 +91,7 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                                     window.open(url, '_blank');
                                 }}
                                 className="p-3 bg-[#33ccff]/20 text-[#33ccff] rounded-xl border border-[#33ccff]/30 shadow-[0_0_15px_rgba(51,204,255,0.2)] active:scale-95 transition-all"
-                                title="Navegar con Waze"
+                                title={t('waze_nav')}
                             >
                                 <Navigation size={18} />
                             </button>
@@ -99,7 +102,7 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                             onClick={() => onUpdateStatus?.(mission.id, 'ON_WAY', !!mission.merchantId)}
                             className="w-full bg-white text-background h-16 rounded-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-3 active:scale-95 transition-all"
                         >
-                            RECOGER PEDIDO <ChevronRight size={20} />
+                            {t('pickup_order')} <ChevronRight size={20} />
                         </button>
                     )}
                     {mission.status === 'ON_WAY' && (
@@ -107,7 +110,7 @@ export const MissionHUD: React.FC<MissionHUDProps> = ({
                             onClick={() => onConfirmDelivery?.(mission)}
                             className="w-full bg-primary text-background h-16 rounded-2xl font-black uppercase tracking-tighter flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-primary/20"
                         >
-                            COMPLETAR ENTREGA <CheckCircle2 size={20} />
+                            {t('complete_delivery')} <CheckCircle2 size={20} />
                         </button>
                     )}
                 </div>

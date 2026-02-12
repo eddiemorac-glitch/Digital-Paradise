@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { CloudRain, MapPin, Zap, Search, Navigation2, Filter, X } from 'lucide-react';
 import { MapLayers, SceneticEffect } from '../../types/map';
 import { playTacticalSound } from '../../utils/tacticalSound';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface LayerControlPanelProps {
     layers: MapLayers;
@@ -27,6 +28,7 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
     searchQuery,
     setSearchQuery
 }) => {
+    const { t } = useLanguageStore();
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
     return (
@@ -47,7 +49,7 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Buscar eventos o locales..."
+                                    placeholder={t('search_map_placeholder')}
                                     className="bg-transparent border-none outline-none text-xs text-white w-full placeholder:text-white/20"
                                     autoFocus
                                 />
@@ -82,7 +84,7 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                     }}
                     disabled={isLocating}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isLocating ? 'text-primary animate-pulse bg-primary/10' : 'text-white/40 hover:text-white hover:bg-white/5'}`}
-                    title="Mi Ubicación"
+                    title={t('my_location')}
                 >
                     <Navigation2 size={18} className={isLocating ? 'fill-primary' : ''} />
                 </button>
@@ -92,14 +94,14 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                 <button
                     onClick={() => setLayers(l => ({ ...l, weather: !l.weather }))}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${layers.weather ? 'text-primary bg-primary/10' : 'text-white/20'}`}
-                    title="Clima Dinámico"
+                    title={t('dynamic_weather')}
                 >
                     <CloudRain size={18} />
                 </button>
                 <button
                     onClick={() => setLayers(l => ({ ...l, scanlines: !l.scanlines }))}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${layers.scanlines ? 'text-primary bg-primary/10' : 'text-white/20'}`}
-                    title="Scanlines Tácticas"
+                    title={t('tactical_scanlines')}
                 >
                     <div className="w-4 h-3 border border-current rounded-sm flex flex-col justify-around px-0.5">
                         <div className="w-full h-px bg-current opacity-50" />
@@ -110,14 +112,14 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                 <button
                     onClick={() => setLayers(l => ({ ...l, merchants: !l.merchants }))}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${layers.merchants ? 'text-primary bg-primary/10' : 'text-white/20'}`}
-                    title="Mostrar Locales"
+                    title={t('show_merchants')}
                 >
                     <MapPin size={18} />
                 </button>
                 <button
                     onClick={() => setLayers(l => ({ ...l, events: !l.events }))}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${layers.events ? 'text-primary bg-primary/10' : 'text-white/20'}`}
-                    title="Mostrar Eventos"
+                    title={t('show_events')}
                 >
                     <Zap size={18} />
                 </button>
@@ -128,7 +130,7 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                         playTacticalSound('CLICK');
                     }}
                     className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-all ${isPatrolling ? 'text-orange-500 bg-orange-500/10' : 'text-white/20 hover:text-white'}`}
-                    title="Modo Patrulla Estratégico"
+                    title={t('strategic_patrol_mode')}
                 >
                     <motion.div animate={isPatrolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 20, ease: "linear" }}>
                         <Zap size={18} />
@@ -143,7 +145,7 @@ export const LayerControlPanel: React.FC<LayerControlPanelProps> = ({
                     playTacticalSound('CLICK');
                 }}
                 className="w-12 h-12 glass rounded-2xl flex items-center justify-center text-primary shadow-xl border-primary/20 hover:scale-110 active:scale-95 transition-all mt-2"
-                title="Ciclo de Ambiente"
+                title={t('ambient_cycle')}
             >
                 <Filter size={22} />
             </button>

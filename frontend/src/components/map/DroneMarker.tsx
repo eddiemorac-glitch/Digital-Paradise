@@ -27,7 +27,11 @@ interface DroneMarkerProps {
     drone: Drone;
 }
 
+import { useLanguageStore } from '../../store/languageStore';
+
 export const DroneMarker: React.FC<DroneMarkerProps> = ({ drone }) => {
+    const { t } = useLanguageStore();
+
     return (
         <Marker
             position={drone.location}
@@ -41,16 +45,18 @@ export const DroneMarker: React.FC<DroneMarkerProps> = ({ drone }) => {
                     </h3>
                     <div className="text-[10px] text-white/70 font-mono space-y-1">
                         <div className="flex justify-between">
-                            <span>STATUS:</span>
-                            <span className={drone.status === 'IDLE' ? 'text-yellow-400' : 'text-green-400'}>{drone.status}</span>
+                            <span>{t('status_label')}:</span>
+                            <span className={drone.status === 'IDLE' ? 'text-yellow-400' : 'text-green-400'}>
+                                {drone.status === 'IDLE' ? t('idle') || 'IDLE' : drone.status}
+                            </span>
                         </div>
                         <div className="flex justify-between">
-                            <span>BATTERY:</span>
+                            <span>{t('battery')}:</span>
                             <span className={drone.batteryLevel < 20 ? 'text-red-500' : 'text-cyan-300'}>{drone.batteryLevel}%</span>
                         </div>
                         {drone.missionId && (
                             <div className="pt-1 border-t border-white/10 mt-1">
-                                MISSION: {drone.missionId.split('-')[0].toUpperCase()}...
+                                {t('mission_label')}: {drone.missionId.split('-')[0].toUpperCase()}...
                             </div>
                         )}
                     </div>

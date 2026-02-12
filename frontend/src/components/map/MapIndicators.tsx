@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MapIndicatorsProps {
     timeOfDay: string;
@@ -16,6 +17,8 @@ export const MapIndicators: React.FC<MapIndicatorsProps> = ({
     urgentEventsCount,
     isLoading
 }) => {
+    const { t } = useLanguageStore();
+
     return (
         <>
             {/* TIME INDICATOR */}
@@ -33,7 +36,7 @@ export const MapIndicators: React.FC<MapIndicatorsProps> = ({
                                 timeOfDay === 'SUNRISE' ? '#ff8866' : '#66aaff'
                     }}
                 />
-                <span>{displayName}</span>
+                <span>{t(displayName.toLowerCase()) || displayName}</span>
             </motion.div>
 
             {/* IDLE INDICATOR */}
@@ -46,7 +49,7 @@ export const MapIndicators: React.FC<MapIndicatorsProps> = ({
                         className="idle-indicator"
                     >
                         <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                        <span>Modo Exploración Activo</span>
+                        <span>{t('exploration_mode')}</span>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -61,7 +64,7 @@ export const MapIndicators: React.FC<MapIndicatorsProps> = ({
                         className="absolute top-16 right-2 md:top-4 md:right-4 z-[1002] px-2 py-1 md:px-3 md:py-1.5 rounded-full bg-red-500/20 border border-red-500/40 backdrop-blur-sm"
                     >
                         <span className="text-[10px] md:text-xs font-black text-red-400 uppercase tracking-wider">
-                            {urgentEventsCount} evento{urgentEventsCount > 1 ? 's' : ''} próximo{urgentEventsCount > 1 ? 's' : ''}
+                            {urgentEventsCount} {t(urgentEventsCount > 1 ? 'urgent_events' : 'urgent_event')}
                         </span>
                     </motion.div>
                 )}
@@ -76,7 +79,7 @@ export const MapIndicators: React.FC<MapIndicatorsProps> = ({
                         exit={{ opacity: 0, scale: 0.8 }}
                         className="absolute top-20 md:top-4 left-1/2 -translate-x-1/2 z-[1002] px-4 py-2 rounded-2xl bg-primary/20 border border-primary/40 backdrop-blur-md flex items-center gap-3"
                     >
-                        <span className="text-[10px] md:text-xs font-black text-primary uppercase tracking-widest whitespace-nowrap">Sincronizando Radar...</span>
+                        <span className="text-[10px] md:text-xs font-black text-primary uppercase tracking-widest whitespace-nowrap">{t('sync_radar')}</span>
                     </motion.div>
                 )}
             </AnimatePresence>

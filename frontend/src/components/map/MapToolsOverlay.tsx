@@ -10,10 +10,9 @@ import {
     X
 } from 'lucide-react';
 import { MapLayers, SceneticEffect } from '../../types/map';
-
 import { playTacticalSound } from '../../utils/tacticalSound';
-
 import { CATEGORIES } from '../../constants/map-categories';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface MapToolsOverlayProps {
     isOpen: boolean;
@@ -52,6 +51,8 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
     setSearchQuery,
     setSceneticEffect
 }) => {
+    const { t } = useLanguageStore();
+
     return (
         <AnimatePresence>
             {isOpen && (
@@ -85,7 +86,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                                         type="text"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        placeholder="Buscar eventos o locales..."
+                                        placeholder={t('search_map_placeholder')}
                                         className="bg-transparent border-none outline-none text-sm text-white w-full placeholder:text-white/20"
                                     />
                                     {searchQuery && (
@@ -98,7 +99,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
 
                             {/* Section: Categories */}
                             <div>
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4 px-1">Categorías</h3>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4 px-1">{t('categories')}</h3>
                                 <div className="grid grid-cols-4 gap-3">
                                     {CATEGORIES.map((cat) => {
                                         const isActive = activeCategories?.includes(cat.id.toLowerCase());
@@ -115,7 +116,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                                                 `}
                                             >
                                                 <span className="text-xl">{cat.icon}</span>
-                                                <span className="text-[9px] font-black uppercase tracking-wider">{cat.label}</span>
+                                                <span className="text-[9px] font-black uppercase tracking-wider">{t(cat.id.toLowerCase()) || cat.label}</span>
                                             </button>
                                         );
                                     })}
@@ -124,35 +125,35 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
 
                             {/* Section: Layer Settings */}
                             <div>
-                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4 px-1">Visualización</h3>
+                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/30 mb-4 px-1">{t('visualization')}</h3>
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={() => setLayers(l => ({ ...l, weather: !l.weather }))}
                                         className={`flex items-center gap-3 p-4 rounded-2xl border ${layers.weather ? 'bg-secondary/20 border-secondary text-secondary' : 'bg-white/5 border-white/5 text-white/40'}`}
                                     >
                                         <CloudRain size={20} />
-                                        <span className="text-xs font-bold">Clima Dinámico</span>
+                                        <span className="text-xs font-bold">{t('dynamic_weather')}</span>
                                     </button>
                                     <button
                                         onClick={() => setLayers(l => ({ ...l, scanlines: !l.scanlines }))}
                                         className={`flex items-center gap-3 p-4 rounded-2xl border ${layers.scanlines ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/5 text-white/40'}`}
                                     >
                                         <Zap size={20} />
-                                        <span className="text-xs font-bold">Líneas Scan</span>
+                                        <span className="text-xs font-bold">{t('scan_lines')}</span>
                                     </button>
                                     <button
                                         onClick={() => setLayers(l => ({ ...l, merchants: !l.merchants }))}
                                         className={`flex items-center gap-3 p-4 rounded-2xl border ${layers.merchants ? 'bg-accent/20 border-accent text-accent' : 'bg-white/5 border-white/5 text-white/40'}`}
                                     >
                                         <MapPin size={20} />
-                                        <span className="text-xs font-bold">Locales</span>
+                                        <span className="text-xs font-bold">{t('places')}</span>
                                     </button>
                                     <button
                                         onClick={() => setLayers(l => ({ ...l, events: !l.events }))}
                                         className={`flex items-center gap-3 p-4 rounded-2xl border ${layers.events ? 'bg-primary/20 border-primary text-primary' : 'bg-white/5 border-white/5 text-white/40'}`}
                                     >
                                         <Zap size={20} />
-                                        <span className="text-xs font-bold">Eventos</span>
+                                        <span className="text-xs font-bold">{t('events')}</span>
                                     </button>
                                 </div>
                             </div>
@@ -164,7 +165,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                                     className={`flex flex-col items-center gap-2 p-4 rounded-2xl border ${isLocating ? 'bg-primary/20 border-primary text-primary animate-pulse' : 'bg-white/5 border-white/5 text-white/40'}`}
                                 >
                                     <Navigation2 size={24} className={isLocating ? 'fill-primary' : ''} />
-                                    <span className="text-[9px] font-black uppercase">GPS</span>
+                                    <span className="text-[9px] font-black uppercase">{t('gps')}</span>
                                 </button>
                                 <button
                                     onClick={setIsPatrolling}
@@ -173,7 +174,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                                     <motion.div animate={isPatrolling ? { rotate: 360 } : {}} transition={{ repeat: Infinity, duration: 10, ease: "linear" }}>
                                         <Zap size={24} />
                                     </motion.div>
-                                    <span className="text-[9px] font-black uppercase">Patrulla</span>
+                                    <span className="text-[9px] font-black uppercase">{t('patrol')}</span>
                                 </button>
                                 <button
                                     onClick={() => {
@@ -183,7 +184,7 @@ export const MapToolsOverlay: React.FC<MapToolsOverlayProps> = ({
                                     className="flex flex-col items-center gap-2 p-4 rounded-2xl border bg-white/5 border-white/5 text-primary"
                                 >
                                     <Filter size={24} />
-                                    <span className="text-[9px] font-black uppercase">Ambiente</span>
+                                    <span className="text-[9px] font-black uppercase">{t('ambience')}</span>
                                 </button>
                             </div>
                         </div>

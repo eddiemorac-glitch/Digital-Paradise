@@ -1,83 +1,88 @@
-import React from 'react';
-import { Power, Bike, Package, Users, Globe, Signal } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+    Wifi, WifiOff, MapPin, MapPinOff, Power, Utensils, Package, Car
+} from 'lucide-react';
+import { playTacticalSound } from '../../utils/tacticalSound';
+import { useLanguageStore } from '../../store/languageStore';
 
 interface EstadoRepartidorProps {
     isOnline: boolean;
-    onToggleOnline: (online: boolean) => void;
+    onToggleOnline: (status: boolean) => void;
     activeWorkType: 'FOOD' | 'PARCEL' | 'RIDE';
     onWorkTypeChange: (type: 'FOOD' | 'PARCEL' | 'RIDE') => void;
     isSocketConnected: boolean;
     isGpsActive: boolean;
 }
 
-export const EstadoRepartidor: React.FC<EstadoRepartidorProps> = ({
+export const EstadoRepartidor = ({
     isOnline,
     onToggleOnline,
     activeWorkType,
     onWorkTypeChange,
     isSocketConnected,
     isGpsActive
-}) => {
+}: EstadoRepartidorProps) => {
+    const { t } = useLanguageStore();
+
     return (
-        <div className="space-y-4">
-            {/* Main Toggle */}
-            <button
-                onClick={() => onToggleOnline(!isOnline)}
-                className={`w-full group relative overflow-hidden glass p-8 rounded-[2.5rem] border-2 transition-all duration-500 ${isOnline
-                    ? 'border-primary bg-primary/10 shadow-[0_0_40px_rgba(0,255,102,0.15)]'
-                    : 'border-white/5 bg-white/5'
-                    }`}
-            >
-                <div className="relative z-10 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-500 ${isOnline ? 'bg-primary text-background' : 'bg-white/5 text-white/20'
-                            }`}>
-                            <Power size={32} strokeWidth={3} className={isOnline ? 'animate-pulse' : ''} />
-                        </div>
-                        <div className="text-left">
-                            <h2 className={`text-2xl font-black uppercase italic tracking-tighter ${isOnline ? 'text-primary' : 'text-white/40'}`}>
-                                {isOnline ? 'ESTÁS CONECTADO' : 'ESTÁS DESCONECTADO'}
-                            </h2>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-40">
-                                {isOnline ? 'Recibiendo pedidos en tiempo real' : 'Conéctate para empezar a ganar'}
-                            </p>
-                        </div>
-                    </div>
+        <div className="glass p-8 rounded-[2.5rem] border-primary/20 space-y-8 relative overflow-hidden">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className={`text-2xl font-black italic uppercase tracking-tighter ${isOnline ? 'text-primary' : 'text-white/40'}`}>
+                        {isOnline ? t('status_online_title') : t('status_offline_title')}
+                    </h2>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/40">
+                        {isOnline ? t('online_desc') : t('offline_desc')}
+                    </p>
                 </div>
+                <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => {
+                        onToggleOnline(!isOnline);
+                        playTacticalSound(isOnline ? 'OFFLINE' : 'ONLINE');
+                    }}
+                    className={`w-20 h-20 rounded-full flex items-center justify-center transition-all ${isOnline ? 'bg-primary text-background shadow-[0_0_40px_rgba(0,255,102,0.4)]' : 'bg-white/5 text-white/20 border border-white/10'}`}
+                >
+                    <Power size={32} />
+                </motion.button>
+            </div>
 
-                {/* Status Pills */}
-                {isOnline && (
-                    <div className="absolute top-4 right-8 flex gap-3">
-                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isSocketConnected ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-500'}`}>
-                            <Signal size={10} strokeWidth={3} />
-                            {isSocketConnected ? 'RED OK' : 'SIN RED'}
-                        </div>
-                        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${isGpsActive ? 'bg-blue-500/20 text-blue-400' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                            <Globe size={10} strokeWidth={3} />
-                            {isGpsActive ? 'GPS OK' : 'SIN GPS'}
-                        </div>
-                    </div>
-                )}
-            </button>
+            {/* STATUS INDICATORS */}
+            <div className="flex gap-4">
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${isSocketConnected ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                    {isSocketConnected ? <Wifi size={14} /> : <WifiOff size={14} />}
+                    <span className="text-[9px] font-black uppercase tracking-widest">{isSocketConnected ? t('network_ok') : t('no_network')}</span>
+                </div>
+                <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${isGpsActive ? 'bg-blue-500/10 border-blue-500/20 text-blue-500' : 'bg-red-500/10 border-red-500/20 text-red-500'}`}>
+                    {isGpsActive ? <MapPin size={14} /> : <MapPinOff size={14} />}
+                    <span className="text-[9px] font-black uppercase tracking-widest">{isGpsActive ? t('gps_ok') : t('no_gps')}</span>
+                </div>
+            </div>
 
-            {/* Work Type Selection */}
-            <div className="flex gap-2 bg-white/5 p-2 rounded-[2rem] border border-white/10">
+            {/* WORK TYPE SELECTOR */}
+            <div className="grid grid-cols-3 gap-4">
                 {[
-                    { id: 'FOOD', icon: Bike, label: 'Comida' },
-                    { id: 'PARCEL', icon: Package, label: 'Paquetes' },
-                    { id: 'RIDE', icon: Users, label: 'Viajes' }
+                    { id: 'FOOD', icon: Utensils, label: t('work_type_food') },
+                    { id: 'PARCEL', icon: Package, label: t('work_type_parcel') },
+                    { id: 'RIDE', icon: Car, label: t('work_type_ride') },
                 ].map((type) => (
-                    <button
+                    <motion.button
                         key={type.id}
-                        onClick={() => onWorkTypeChange(type.id as any)}
-                        className={`flex-1 flex flex-col items-center gap-2 py-5 rounded-2xl transition-all ${activeWorkType === type.id
-                            ? 'bg-white/10 text-primary shadow-inner border border-white/5'
-                            : 'text-white/20 hover:text-white/40'
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => {
+                            if (activeWorkType !== type.id) {
+                                onWorkTypeChange(type.id as any);
+                                playTacticalSound('CLICK');
+                            }
+                        }}
+                        className={`flex flex-col items-center justify-center gap-3 p-4 rounded-3xl border transition-all ${activeWorkType === type.id
+                            ? 'bg-primary text-background border-primary shadow-[0_10px_30px_rgba(0,255,102,0.3)]'
+                            : 'bg-white/5 border-white/10 text-white/40 hover:bg-white/10'
                             }`}
                     >
-                        <type.icon size={24} strokeWidth={activeWorkType === type.id ? 2.5 : 2} />
-                        <span className="text-[9px] font-black uppercase tracking-widest">{type.label}</span>
-                    </button>
+                        <type.icon size={24} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">{type.label}</span>
+                    </motion.button>
                 ))}
             </div>
         </div>
