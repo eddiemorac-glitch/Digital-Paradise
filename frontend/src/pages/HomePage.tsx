@@ -111,10 +111,12 @@ export const HomePage = () => {
             {!selectedMerchant ? (
                 <motion.div
                     key="grid"
+                <motion.div
+                    key="grid"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative min-h-screen w-full max-w-[100vw] overflow-x-hidden"
+                    className="relative min-h-screen w-full"
                 >
                     {/* NEW: Caribbean Beach Background */}
                     <div className="bg-caribe-beach" />

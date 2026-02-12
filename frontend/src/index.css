@@ -48,11 +48,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--text);
-  overflow-x: hidden; /* CRITICAL: Prevent horizontal scroll */
+  overflow-x: hidden;
+  /* Keep this for horizontal safety */
   width: 100%;
   position: relative;
   min-height: 100dvh;
-  touch-action: manipulation; /* Improve touch response */
+  /* Removed touch-action: manipulation to restore full native scroll physics */
 }
 
 html {

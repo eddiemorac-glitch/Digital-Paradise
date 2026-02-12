@@ -51,7 +51,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                     onClick={handleBackToHome}
                 >
                     DIGITAL<span className="text-primary">PARADISE</span>
-                    <span className="text-[8px] text-white/50 ml-1 font-mono">v2.4</span>
+                    <span className="text-[8px] text-white/50 ml-1 font-mono">v2.5</span>
                 </span>
             </div>
 
