@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, UseInterceptors } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { ThrottlerGuard } from '@nestjs/throttler';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -34,6 +35,7 @@ export class ProductsController {
     }
 
     @Post('bulk')
+    @UseGuards(ThrottlerGuard)
     findByIds(@Body('ids') ids: string[]) {
         return this.productsService.findByIds(ids);
     }

@@ -71,7 +71,7 @@ export const MissionTracker = ({ mission: initialMission, onClose }: MissionProp
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '150%' }}
-            className="fixed bottom-0 left-0 right-0 z-[60] p-0 md:p-6 pointer-events-none flex justify-center h-[90vh] md:h-auto"
+            className="fixed bottom-0 left-0 right-0 z-[9995] p-0 md:p-6 pointer-events-none flex justify-center h-[90vh] md:h-auto"
         >
             <div className="w-full max-w-5xl bg-[#0a0f18] border-t md:border border-white/10 rounded-t-[2.5rem] md:rounded-[2.5rem] shadow-[0_-20px_60px_rgba(0,0,0,0.8)] overflow-hidden pointer-events-auto flex flex-col relative">
 

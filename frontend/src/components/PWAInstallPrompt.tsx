@@ -78,7 +78,7 @@ export const PWAInstallPrompt = ({ onOpen, onClose, blocked = false }: { onOpen?
                     initial={{ opacity: 0, scale: 0.9, y: 100 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9, y: 100 }}
-                    className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[10002]"
+                    className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 md:left-auto md:right-6 md:w-[400px] z-[10004]"
                 >
                     <div className="glass border border-white/10 rounded-[2.5rem] p-6 shadow-2xl relative overflow-hidden group">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10" />

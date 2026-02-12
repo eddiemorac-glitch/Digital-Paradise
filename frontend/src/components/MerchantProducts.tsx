@@ -37,7 +37,7 @@ export const MerchantProducts = ({ merchant, onBack }: MerchantProductsProps) =>
             <div className="fixed bottom-0 -left-40 w-96 h-96 bg-secondary/5 rounded-full blur-[140px] pointer-events-none -z-10 transform-gpu" />
 
             {/* Navigation Bar */}
-            <nav className="sticky top-0 z-50 px-4 py-4 sm:py-6 flex items-center justify-between pointer-events-none mb-4 sm:mb-8 safe-area-top">
+            <nav className="sticky top-[60px] md:top-[88px] z-50 px-4 py-4 sm:py-6 flex items-center justify-between pointer-events-none mb-4 sm:mb-8 safe-area-top">
                 <Button
                     variant="glass"
                     size="sm"

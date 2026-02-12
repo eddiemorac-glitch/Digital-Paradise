@@ -65,13 +65,13 @@ export const NotificationHub = ({ isOpen, onClose, onNavigate }: NotificationHub
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-background/40 backdrop-blur-sm z-[100]"
+                        className="fixed inset-0 bg-background/40 backdrop-blur-sm z-[10000]"
                     />
                     <motion.div
                         initial={{ opacity: 0, x: 20, scale: 0.95 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                        className="fixed top-24 right-4 md:right-8 w-[350px] md:w-[400px] glass border-white/10 rounded-[2.5rem] shadow-2xl z-[101] overflow-hidden"
+                        className="fixed top-24 right-4 md:right-8 w-[350px] md:w-[400px] glass border-white/10 rounded-[2.5rem] shadow-2xl z-[10001] overflow-hidden"
                     >
                         {/* Header */}
                         <div className="p-6 border-b border-white/5 bg-white/5 flex items-center justify-between">

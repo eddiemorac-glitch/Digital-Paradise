@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, MessageCircle } from 'lucide-react';
 import { Bot } from 'lucide-react';
 import { useLanguageStore } from '../store/languageStore';
+import { useTimeAwareness } from '../hooks/useTimeAwareness';
 
 export const CocoWelcomeBubble = ({ onOpenChat }: { onOpenChat: () => void }) => {
     const { language } = useLanguageStore();
@@ -22,14 +23,22 @@ export const CocoWelcomeBubble = ({ onOpenChat }: { onOpenChat: () => void }) =>
         }
     }, []);
 
+    const { hour } = useTimeAwareness();
+
+    const getGreeting = (lang: 'es' | 'en') => {
+        if (hour >= 5 && hour < 12) return lang === 'es' ? "¡Buenos días! ☕" : "Good morning! ☕";
+        if (hour >= 12 && hour < 19) return lang === 'es' ? "¡Buenas tardes! ☀️" : "Good afternoon! ☀️";
+        return lang === 'es' ? "¡Buenas noches! 🌙" : "Good evening! 🌙";
+    };
+
     const messages = {
         es: [
-            "¡Pura Vida! Soy Coco Caribeño. 🥥",
+            `${getGreeting('es')} Soy Coco Caribeño. 🥥`,
             "¿Buscas un lugar rico para comer?",
             "¡Te ayudo a explorar el paraíso!",
         ],
         en: [
-            "Pura Vida! I'm Coco Caribeño. 🥥",
+            `${getGreeting('en')} I'm Coco Caribeño. 🥥`,
             "Looking for a great place to eat?",
             "I'll help you explore paradise!",
         ]

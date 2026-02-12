@@ -5,6 +5,7 @@ import { Card, CardTitle, CardDescription, CardContent, CardFooter } from './ui/
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { getMerchantAvailability } from '../utils/merchant';
+import { useTimeAwareness } from '../hooks/useTimeAwareness';
 
 interface MerchantCardProps {
     merchant: Merchant;
@@ -14,6 +15,7 @@ interface MerchantCardProps {
 
 export const MerchantCard = ({ merchant, onClick, isSpotlight }: MerchantCardProps) => {
     const { language, t } = useLanguageStore();
+    useTimeAwareness(); // 🕒 Forces re-render every minute for real-time status updates
     const availability = getMerchantAvailability(merchant);
 
     return (
