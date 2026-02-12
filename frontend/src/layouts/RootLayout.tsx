@@ -250,22 +250,31 @@ export const RootLayout = () => {
             <GlobalNotifications />
             <OfflineIndicator />
             <CookieBanner />
-            <PushNotificationPrompt
-                delay={15000}
-                blocked={activePrompt !== null && activePrompt !== 'push'}
-                onOpen={() => setActivePrompt('push')}
-                onClose={() => setActivePrompt(null)}
-            />
-            <PWAInstallPrompt
-                blocked={activePrompt !== null && activePrompt !== 'pwa'}
-                onOpen={() => setActivePrompt('pwa')}
-                onClose={() => setActivePrompt(null)}
-            />
-            <SWUpdatePrompt
-                blocked={activePrompt !== null && activePrompt !== 'update'}
-                onOpen={() => setActivePrompt('update')}
-                onClose={() => setActivePrompt(null)}
-            />
+            {/* Strictly Exclusive Prompt Rendering */}
+            {(activePrompt === null || activePrompt === 'push') && (
+                <PushNotificationPrompt
+                    delay={15000}
+                    blocked={activePrompt !== null && activePrompt !== 'push'}
+                    onOpen={() => setActivePrompt('push')}
+                    onClose={() => setActivePrompt(null)}
+                />
+            )}
+
+            {(activePrompt === null || activePrompt === 'pwa') && (
+                <PWAInstallPrompt
+                    blocked={activePrompt !== null && activePrompt !== 'pwa'}
+                    onOpen={() => setActivePrompt('pwa')}
+                    onClose={() => setActivePrompt(null)}
+                />
+            )}
+
+            {(activePrompt === null || activePrompt === 'update') && (
+                <SWUpdatePrompt
+                    blocked={activePrompt !== null && activePrompt !== 'update'}
+                    onOpen={() => setActivePrompt('update')}
+                    onClose={() => setActivePrompt(null)}
+                />
+            )}
             <NotificationHub
                 isOpen={isNotificationHubOpen}
                 onClose={() => setIsNotificationHubOpen(false)}

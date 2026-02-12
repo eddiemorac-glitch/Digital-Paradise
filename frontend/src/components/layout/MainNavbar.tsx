@@ -35,8 +35,8 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
     };
 
     return (
-        <nav className="fixed top-0 w-full z-[10000] glass border-b border-white/5 px-4 md:px-8 py-2 md:py-4 flex justify-between items-center transition-all duration-300">
-            <div className="flex items-center gap-2 md:gap-3">
+        <nav className="fixed top-0 w-full z-[10000] glass border-b border-white/5 px-3 md:px-8 py-2 md:py-4 flex justify-between items-center transition-all duration-300 max-w-[100vw] overflow-hidden">
+            <div className="flex items-center gap-2 md:gap-3 shrink-0">
                 <motion.img
                     src={logo}
                     className="w-8 h-8 md:w-10 md:h-10 object-contain filter drop-shadow-[0_0_8px_rgba(0,255,102,0.4)]"
@@ -51,7 +51,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                     onClick={handleBackToHome}
                 >
                     DIGITAL<span className="text-primary">PARADISE</span>
-                    <span className="text-[8px] text-white/20 ml-1 font-mono">v2.1</span>
+                    <span className="text-[8px] text-white/50 ml-1 font-mono">v2.3</span>
                 </span>
             </div>
 
@@ -89,22 +89,22 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                 </Button>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
-                {/* Tactical Events Button - Caribbean Vibe */}
+            <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                {/* Tactical Events Button - Hidden on small mobile to save space */}
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={() => {
                         playTacticalSound('CLICK');
                         navigate('/map');
                     }}
-                    className="bg-tactical-events px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap flex items-center justify-center mr-2"
+                    className="hidden sm:flex bg-tactical-events px-3 sm:px-6 py-1.5 sm:py-2 rounded-xl text-background font-black uppercase tracking-widest text-[10px] shadow-tactical animate-sparkle border border-white/20 whitespace-nowrap items-center justify-center mr-2"
                 >
                     {t('events')}
                 </motion.button>
 
                 <button
                     onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
-                    className="glass px-2 py-1.5 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs flex items-center gap-1.5 md:gap-2 border border-white/10 hover:border-primary/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)] font-black uppercase tracking-tighter group"
+                    className="glass px-2.5 py-1.5 md:px-3 md:py-2 rounded-xl text-[10px] md:text-xs flex items-center gap-1.5 md:gap-2 border border-white/10 hover:border-primary/50 transition-all shadow-[0_0_15px_rgba(255,255,255,0.05)] font-black uppercase tracking-tighter group"
                     title={language === 'es' ? 'Switch to English' : 'Cambiar a Español'}
                 >
                     <span className={language === 'es' ? 'opacity-100 scale-110' : 'opacity-30 grayscale group-hover:opacity-100 group-hover:grayscale-0 transition-all underline decoration-primary font-light'}>ES</span>
@@ -159,7 +159,7 @@ export const MainNavbar = ({ isSocketConnected, onOpenAuth, onOpenNotifications 
                 ) : (
                     <button
                         onClick={() => onOpenAuth('login')}
-                        className="bg-primary hover:bg-primary-dark text-background font-black px-4 py-1.5 md:px-6 md:py-2.5 rounded-xl md:rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,255,102,0.3)] text-[10px] md:text-xs uppercase tracking-widest"
+                        className="bg-primary hover:bg-primary-dark text-background font-black px-3 py-1.5 md:px-6 md:py-2.5 rounded-xl md:rounded-2xl transition-all hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(0,255,102,0.3)] text-[10px] md:text-xs uppercase tracking-widest whitespace-nowrap"
                     >
                         {t('login')}
                     </button>

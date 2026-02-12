@@ -48,10 +48,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--background);
   color: var(--text);
-  overflow-x: hidden;
+  overflow-x: hidden; /* CRITICAL: Prevent horizontal scroll */
+  width: 100%;
   position: relative;
   min-height: 100dvh;
+  touch-action: manipulation; /* Improve touch response */
 }
+
+html {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 
 /* Premium Grain Overlay */
 body::before {

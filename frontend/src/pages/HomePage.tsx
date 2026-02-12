@@ -114,7 +114,7 @@ export const HomePage = () => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="relative min-h-screen"
+                    className="relative min-h-screen w-full max-w-[100vw] overflow-x-hidden"
                 >
                     {/* NEW: Caribbean Beach Background */}
                     <div className="bg-caribe-beach" />
@@ -264,87 +264,99 @@ export const HomePage = () => {
                     {/* Results Section */}
                     <section className="px-4 pb-20">
                         <div className="max-w-7xl mx-auto">
-                            {isLoading ? (
-                                <div className="flex flex-col items-center justify-center py-32 gap-6">
-                                    <div className="relative">
-                                        <div className="w-24 h-24 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
-                                        <Waves className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
-                                    </div>
-                                    <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80 animate-pulse">{t('loading')}</p>
-                                </div>
-                            ) : isError ? (
-                                <div className="glass-morphism py-12 md:py-20 text-center max-w-lg mx-auto border-red-500/20 bg-red-500/5">
-                                    <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <X className="text-red-500" size={32} />
-                                    </div>
-                                    <h3 className="text-xl font-bold mb-2 text-white">{t('connection_error')}</h3>
-                                    <p className="text-white/40 mb-6 text-sm">{t('connection_error_desc')}</p>
-                                    <Button variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10" onClick={() => window.location.reload()}>
-                                        {t('retry')}
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="flex flex-col gap-12">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grid-flow-row-dense">
-                                        <AnimatePresence mode="popLayout">
-                                            {(showAllMerchants ? filteredMerchants : filteredMerchants?.slice(0, 6))?.map((merchant: any, index: number) => {
-                                                const isSpotlight = merchant.avgRating >= 4.8 && merchant.reviewCount > 5;
-                                                return (
-                                                    <motion.div
-                                                        key={merchant.id}
-                                                        initial={{ opacity: 0, y: 20 }}
-                                                        animate={{ opacity: 1, y: 0 }}
-                                                        exit={{ opacity: 0, scale: 0.95 }}
-                                                        transition={{ duration: 0.4, delay: index * 0.05 }}
-                                                        className={isSpotlight ? 'md:col-span-2' : 'col-span-1'}
-                                                    >
-                                                        <MerchantCard
-                                                            merchant={merchant}
-                                                            onClick={() => setSelectedMerchant(merchant)}
-                                                            isSpotlight={isSpotlight}
-                                                        />
-                                                    </motion.div>
-                                                );
-                                            })}
-                                        </AnimatePresence>
-                                    </div>
+                            {(() => {
+                                if (isLoading) {
+                                    return (
+                                        <div className="flex flex-col items-center justify-center py-32 gap-6">
+                                            <div className="relative">
+                                                <div className="w-24 h-24 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+                                                <Waves className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-pulse" size={32} />
+                                            </div>
+                                            <p className="text-xs font-bold uppercase tracking-[0.3em] text-primary/80 animate-pulse">{t('loading')}</p>
+                                        </div>
+                                    );
+                                }
 
-                                    {!showAllMerchants && filteredMerchants && filteredMerchants.length > 6 && (
-                                        <motion.div
-                                            initial={{ opacity: 0 }}
-                                            whileInView={{ opacity: 1 }}
-                                            className="flex justify-center pt-8"
-                                        >
-                                            <button
-                                                onClick={() => {
-                                                    playTacticalSound('CLICK');
-                                                    setShowAllMerchants(true);
-                                                }}
-                                                className="glass px-8 py-3 rounded-full border-primary/20 text-primary font-bold uppercase tracking-widest text-xs hover:bg-primary/10 transition-all flex items-center gap-3 group hover:scale-105 active:scale-95"
+                                if (isError) {
+                                    return (
+                                        <div className="glass-morphism py-12 md:py-20 text-center max-w-lg mx-auto border-red-500/20 bg-red-500/5">
+                                            <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <X className="text-red-500" size={32} />
+                                            </div>
+                                            <h3 className="text-xl font-bold mb-2 text-white">{t('connection_error')}</h3>
+                                            <p className="text-white/40 mb-6 text-sm">{t('connection_error_desc')}</p>
+                                            <Button variant="outline" className="border-red-500/50 text-red-400 hover:bg-red-500/10" onClick={() => window.location.reload()}>
+                                                {t('retry')}
+                                            </Button>
+                                        </div>
+                                    );
+                                }
+
+                                if (filteredMerchants?.length === 0) {
+                                    return (
+                                        <div className="glass-morphism py-12 md:py-20 text-center max-w-2xl mx-auto border-dashed border-white/10">
+                                            <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                                                <Search className="text-white/20" size={32} />
+                                            </div>
+                                            <h3 className="text-xl md:text-2xl font-bold mb-2 text-white/80">No se encontraron resultados</h3>
+                                            <p className="text-white/40 mb-8 text-sm md:text-base">Intenta con otra categoría o término de búsqueda</p>
+                                            <Button
+                                                variant="glass"
+                                                onClick={() => { setSearchQuery(''); setSelectedCategory(undefined); }}
                                             >
-                                                <Sparkles size={16} className="group-hover:text-amber-400 transition-colors" />
-                                                {language === 'es' ? 'Ver todos los lugares' : 'View all places'}
-                                            </button>
-                                        </motion.div>
-                                    )}
-                                </div>
-                            )}
+                                                Limpiar filtros
+                                            </Button>
+                                        </div>
+                                    );
+                                }
 
-                            {!isLoading && !isError && filteredMerchants?.length === 0 && (
-                                <div className="glass-morphism py-12 md:py-20 text-center max-w-2xl mx-auto border-dashed border-white/10">
-                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <Search className="text-white/20" size={32} />
+                                return (
+                                    <div className="flex flex-col gap-12">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 grid-flow-row-dense">
+                                            <AnimatePresence mode="popLayout">
+                                                {(showAllMerchants ? filteredMerchants : filteredMerchants?.slice(0, 6))?.map((merchant: any, index: number) => {
+                                                    const isSpotlight = merchant.avgRating >= 4.8 && merchant.reviewCount > 5;
+                                                    return (
+                                                        <motion.div
+                                                            key={merchant.id}
+                                                            initial={{ opacity: 0, y: 20 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            exit={{ opacity: 0, scale: 0.95 }}
+                                                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                                                            className={isSpotlight ? 'md:col-span-2' : 'col-span-1'}
+                                                        >
+                                                            <MerchantCard
+                                                                merchant={merchant}
+                                                                onClick={() => setSelectedMerchant(merchant)}
+                                                                isSpotlight={isSpotlight}
+                                                            />
+                                                        </motion.div>
+                                                    );
+                                                })}
+                                            </AnimatePresence>
+                                        </div>
+
+                                        {!showAllMerchants && filteredMerchants && filteredMerchants.length > 6 && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                whileInView={{ opacity: 1 }}
+                                                className="flex justify-center pt-8"
+                                            >
+                                                <button
+                                                    onClick={() => {
+                                                        playTacticalSound('CLICK');
+                                                        setShowAllMerchants(true);
+                                                    }}
+                                                    className="glass px-8 py-3 rounded-full border-primary/20 text-primary font-bold uppercase tracking-widest text-xs hover:bg-primary/10 transition-all flex items-center gap-3 group hover:scale-105 active:scale-95"
+                                                >
+                                                    <Sparkles size={16} className="group-hover:text-amber-400 transition-colors" />
+                                                    {language === 'es' ? 'Ver todos los lugares' : 'View all places'}
+                                                </button>
+                                            </motion.div>
+                                        )}
                                     </div>
-                                    <h3 className="text-xl md:text-2xl font-bold mb-2 text-white/80">No se encontraron resultados</h3>
-                                    <p className="text-white/40 mb-8 text-sm md:text-base">Intenta con otra categoría o término de búsqueda</p>
-                                    <Button
-                                        variant="glass"
-                                        onClick={() => { setSearchQuery(''); setSelectedCategory(undefined); }}
-                                    >
-                                        Limpiar filtros
-                                    </Button>
-                                </div>
-                            )}
+                                );
+                            })()}
                         </div>
                     </section>
 
