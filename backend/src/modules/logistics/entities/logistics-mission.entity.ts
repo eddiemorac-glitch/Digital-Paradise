@@ -23,6 +23,7 @@ export class LogisticsMission extends BaseEntity {
     @Column({ nullable: true })
     orderId: string;
 
+    @Index()
     @Column({
         type: 'enum',
         enum: OrderStatus,

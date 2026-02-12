@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, DataSource } from 'typeorm';
+import { Repository, DataSource, In } from 'typeorm';
 import { Order } from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -55,7 +55,22 @@ export class OrdersService {
     ) {
         const merchant = await this.merchantsService.findOne(merchantId);
 
-        // 1. Fetch Items & Calculate Subtotal
+        // 1. Fetch All Items in Batch (Fix N+1)
+        const productIds = items.filter(i => i.productId).map(i => i.productId!) as string[];
+        const eventIds = items.filter(i => i.eventId).map(i => i.eventId!) as string[];
+        const requestIds = items.filter(i => i.eventRequestId).map(i => i.eventRequestId!) as string[];
+
+        const [products, events, requests] = await Promise.all([
+            productIds.length > 0 ? this.productsService.findByIds(productIds) : Promise.resolve([]),
+            eventIds.length > 0 ? this.eventsService.findByIds(eventIds) : Promise.resolve([]),
+            requestIds.length > 0 ? this.dataSource.getRepository('EventRequest').findBy({ id: In(requestIds) } as any) : Promise.resolve([])
+        ]);
+
+        const productMap = new Map(products.map(p => [p.id, p]));
+        const eventMap = new Map(events.map(e => [e.id, e]));
+        const requestMap = new Map((requests as any[]).map(r => [r.id, r]));
+
+        // 2. Calculate Subtotal
         let itemsSubtotal = 0;
         const validItems: OrderItem[] = [];
 
@@ -65,17 +80,20 @@ export class OrdersService {
             let price = 0;
 
             if (itemDto.productId) {
-                const product = await this.productsService.findOne(itemDto.productId);
+                const product = productMap.get(itemDto.productId);
+                if (!product) throw new NotFoundException(`Product ${itemDto.productId} not found`);
                 if (product.merchantId !== merchantId) throw new BadRequestException(`Product ${product.name} not from merchant`);
                 orderItem.productId = product.id;
                 price = product.price;
             } else if (itemDto.eventId) {
-                const event = await this.eventsService.findOne(itemDto.eventId);
+                const event = eventMap.get(itemDto.eventId);
+                if (!event) throw new NotFoundException(`Event ${itemDto.eventId} not found`);
                 if (event.merchantId !== merchantId) throw new BadRequestException(`Event ${event.title} not from merchant`);
                 orderItem.eventId = event.id;
                 price = event.price;
             } else if (itemDto.eventRequestId) {
-                const request = await this.dataSource.getRepository('EventRequest').findOne({ where: { id: itemDto.eventRequestId } }) as any;
+                const request = requestMap.get(itemDto.eventRequestId);
+                if (!request) throw new NotFoundException(`EventRequest ${itemDto.eventRequestId} not found`);
                 orderItem.eventRequestId = request.id;
                 price = request.price;
             }

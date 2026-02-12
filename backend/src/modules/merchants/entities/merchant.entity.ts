@@ -20,6 +20,7 @@ export class Merchant extends BaseEntity {
     @Column({ type: 'text', nullable: true })
     description: string;
 
+    @Index()
     @Column({ type: 'enum', enum: MerchantCategory, default: MerchantCategory.RESTAURANT })
     category: MerchantCategory;
 
@@ -72,6 +73,7 @@ export class Merchant extends BaseEntity {
     })
     longitude: number;
 
+    @Index()
     @Column({ type: 'enum', enum: MerchantStatus, default: MerchantStatus.PENDING_APPROVAL })
     status: MerchantStatus;
 
@@ -81,6 +83,7 @@ export class Merchant extends BaseEntity {
     @OneToMany(() => Review, (review) => review.merchant)
     reviews: Review[];
 
+    @Index()
     @Column({ default: true })
     isActive: boolean;
 

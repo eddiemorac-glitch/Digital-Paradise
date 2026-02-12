@@ -23,6 +23,7 @@ export class User extends BaseEntity {
     @Column({ nullable: true })
     avatarId: string;
 
+    @Index()
     @Column({
         type: 'enum',
         enum: UserRole,
@@ -30,6 +31,7 @@ export class User extends BaseEntity {
     })
     role: UserRole;
 
+    @Index()
     @Column({ nullable: true })
     phoneNumber: string;
 
@@ -39,6 +41,7 @@ export class User extends BaseEntity {
     @Column({ type: 'enum', enum: TaxIdType, nullable: true })
     taxIdType: TaxIdType;
 
+    @Index()
     @Column({ default: true })
     isActive: boolean;
 
@@ -56,6 +59,7 @@ export class User extends BaseEntity {
     @Column({ default: false })
     isOnline: boolean;
 
+    @Index()
     @Column({
         type: 'varchar',
         length: 20,

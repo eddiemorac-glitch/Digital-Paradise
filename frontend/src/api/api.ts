@@ -15,7 +15,7 @@ console.log('🔌 API Base URL:', baseURL);
 // Add a request interceptor to add the auth token to headers
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = useAuthStore.getState().token;
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -60,7 +60,7 @@ api.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = localStorage.getItem('refresh_token');
+            const refreshToken = useAuthStore.getState().refreshToken;
 
             if (refreshToken) {
                 try {
@@ -72,7 +72,7 @@ api.interceptors.response.use(
 
                     const { access_token, refresh_token: newRefreshToken, user } = response.data;
 
-                    // Update store and localStorage
+                    // Update store (Zustand persists this to localStorage)
                     useAuthStore.getState().setAuth(user, access_token, newRefreshToken);
 
                     processQueue(null, access_token);

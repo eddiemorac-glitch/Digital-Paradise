@@ -31,8 +31,8 @@ import { MapIndicators } from './map/MapIndicators';
 import { SignalIntercept } from './hud/SignalIntercept';
 import { EventLayer } from './map/EventLayer';
 import { MapErrorBoundary } from './map/MapErrorBoundary';
-import { useDroneLayer } from '../hooks/map/useDroneLayer';
-import { DroneMarker } from './map/DroneMarker';
+// useDroneLayer moved to sub-component
+import { DroneLayer } from './map/DroneLayer';
 // getEventMarkerHTML moved to EventLayer
 
 const PUERTO_VIEJO_CENTER: [number, number] = [9.6558, -82.7538];
@@ -99,8 +99,7 @@ const LiveMapComponent: React.FC<LiveMapProps> = ({
         hoveredEventId
     });
 
-    // Phase 24: Drone Layer
-    const drones = useDroneLayer();
+    // Phase 24: Drone Layer (Moved to sub-component)
 
     // Fit Bounds on Initial Mission Load or Auto-Follow
     useEffect(() => {
@@ -196,10 +195,8 @@ const LiveMapComponent: React.FC<LiveMapProps> = ({
                     />
                 )}
 
-                {/* Phase 24: Kinetic Logistics (Drones) */}
-                {drones.map(drone => (
-                    <DroneMarker key={drone.id} drone={drone} />
-                ))}
+                {/* Phase 24: Kinetic Logistics (Drones) - Optimized Layer */}
+                <DroneLayer />
             </MapContainer>
 
             {/* LEGACY CATEGORY FILTERS (Hide on Mobile) */}
