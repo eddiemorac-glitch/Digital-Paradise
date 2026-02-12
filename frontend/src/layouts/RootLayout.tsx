@@ -260,7 +260,10 @@ export const RootLayout = () => {
                 onOpen={() => setActivePrompt('pwa')}
                 onClose={() => setActivePrompt(null)}
             />
-            <SWUpdatePrompt />
+            <SWUpdatePrompt
+                onOpen={() => setActivePrompt('update')}
+                onClose={() => setActivePrompt(null)}
+            />
             <NotificationHub
                 isOpen={isNotificationHubOpen}
                 onClose={() => setIsNotificationHubOpen(false)}
@@ -307,7 +310,14 @@ export const RootLayout = () => {
             <MainFooter />
 
             {/* Floating Action Button Stack (WhatsApp + Cart) */}
-            <div className="fixed bottom-[104px] lg:bottom-[88px] right-4 z-[9000] flex flex-col items-end gap-3 pointer-events-none">
+            <motion.div
+                initial={false}
+                animate={{
+                    y: activePrompt ? 100 : 0,
+                    opacity: activePrompt ? 0 : 1
+                }}
+                className={`fixed ${user ? 'bottom-[104px] lg:bottom-[88px]' : 'bottom-6'} right-4 z-[9000] flex flex-col items-end gap-3 pointer-events-none transition-all duration-300`}
+            >
 
                 {/* WhatsApp Button */}
                 <motion.a
@@ -316,7 +326,7 @@ export const RootLayout = () => {
                     rel="noopener noreferrer"
                     whileHover={{ scale: 1.1, x: -5 }}
                     whileTap={{ scale: 0.9 }}
-                    className="pointer-events-auto glass p-2 rounded-2xl border-white/10 shadow-2xl group flex items-center gap-2"
+                    className={`pointer-events-auto glass p-2 rounded-2xl border-white/10 shadow-2xl group flex items-center gap-2 ${activePrompt ? 'pointer-events-none' : ''}`}
                 >
                     <div className="w-10 h-10 lg:w-12 lg:h-12 bg-[#25D366] rounded-xl flex items-center justify-center text-white shadow-[0_0_20px_rgba(37,211,102,0.4)]">
                         <MessageCircle size={20} className="lg:w-6 lg:h-6" />
@@ -329,7 +339,8 @@ export const RootLayout = () => {
                         onClick={() => setIsCartOpen(true)}
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         whileTap={{ scale: 0.9 }}
-                        className="pointer-events-auto w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,255,102,0.4)] group relative"
+                        disabled={!!activePrompt}
+                        className="pointer-events-auto w-14 h-14 lg:w-16 lg:h-16 bg-primary rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(0,255,102,0.4)] group relative disabled:opacity-50 disabled:grayscale"
                     >
                         <ShoppingBag className="text-background group-hover:animate-bounce" size={24} />
                         {cartItemCount > 0 && (
@@ -339,7 +350,7 @@ export const RootLayout = () => {
                         )}
                     </motion.button>
                 )}
-            </div>
+            </motion.div>
 
             <CartSidebar
                 isOpen={isCartOpen}
@@ -356,7 +367,12 @@ export const RootLayout = () => {
                 onClick={() => navigate('/assistant')}
                 whileHover={{ scale: 1.1, rotate: -10, y: -5 }}
                 whileTap={{ scale: 0.9 }}
-                className="fixed bottom-[104px] lg:bottom-[88px] left-4 w-14 h-14 lg:w-16 lg:h-16 glass shadow-[0_0_40px_rgba(0,255,102,0.2)] rounded-[1.8rem] flex items-center justify-center z-[9000] group border border-primary/20 overflow-hidden"
+                animate={{
+                    y: activePrompt ? 100 : 0,
+                    opacity: activePrompt ? 0 : 1
+                }}
+                disabled={!!activePrompt}
+                className={`fixed ${user ? 'bottom-[104px] lg:bottom-[88px]' : 'bottom-6'} left-4 w-14 h-14 lg:w-16 lg:h-16 glass shadow-[0_0_40px_rgba(0,255,102,0.2)] rounded-[1.8rem] flex items-center justify-center z-[9000] group border border-primary/20 overflow-hidden transition-all duration-300`}
             >
                 <div className="absolute inset-0 bg-primary/5 group-hover:bg-primary/10 transition-colors" />
                 <div className="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full animate-pulse shadow-[0_0_10px_rgba(0,255,102,0.5)]" />

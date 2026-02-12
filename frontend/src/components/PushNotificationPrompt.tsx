@@ -74,7 +74,7 @@ export const PushNotificationPrompt = ({
                 initial={{ opacity: 0, y: 50, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 50, scale: 0.95 }}
-                className="fixed bottom-[120px] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[9500] safe-area-bottom"
+                className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-4 right-4 md:left-auto md:right-6 md:w-[380px] z-[10002] safe-area-bottom"
             >
                 <div className="glass border border-white/10 rounded-[2.5rem] p-6 shadow-2xl backdrop-blur-xl bg-[#0B1015]/80">
                     <div className="flex gap-4 items-start">
