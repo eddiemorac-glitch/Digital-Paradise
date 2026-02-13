@@ -32,7 +32,7 @@
   --text-lg: clamp(1.125rem, 4vw, 1.25rem);
   --text-xl: clamp(1.25rem, 5vw, 1.5rem);
   --text-2xl: clamp(1.5rem, 6vw, 2.25rem);
-  --text-hero: clamp(2.5rem, 10vw, 5rem);
+  --text-hero: clamp(3.5rem, 12vw, 6rem);
 
   /* Safe Area Variables */
   --sat: env(safe-area-inset-top);

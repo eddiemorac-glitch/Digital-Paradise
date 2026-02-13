@@ -141,7 +141,7 @@ export const useTacticalMap = ({
         setIsLoading(true);
         // Standard debounced sync. 
         // We rely on the initial onMapReady call from MapController + triggerRefresh.
-        const delay = viewKey === 0 ? 500 : 1200; // Increased debounce time for stability
+        const delay = viewKey === 0 ? 500 : 600; // Reduced debounce for snappier feel
         const timeoutId = setTimeout(fetchEvents, delay);
 
         return () => {

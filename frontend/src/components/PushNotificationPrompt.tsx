@@ -4,6 +4,7 @@ import { Bell, X, Check } from 'lucide-react';
 import { socketService } from '../api/socket';
 import { pushNotificationService } from '../services/pushNotificationService';
 import { useLanguageStore } from '../store/languageStore';
+import { useNotificationStore } from '../store/notificationStore';
 
 interface PushNotificationPromptProps {
     delay?: number; // ms to wait before showing prompt
@@ -22,6 +23,7 @@ export const PushNotificationPrompt = ({
     const [dismissed, setDismissed] = useState(false);
     const [isReady, setIsReady] = useState(false);
     const { t } = useLanguageStore();
+    const { addNotification } = useNotificationStore();
 
     useEffect(() => {
         // Check if already granted or denied
@@ -50,15 +52,30 @@ export const PushNotificationPrompt = ({
     }, [isReady, blocked, show, dismissed, onOpen]);
 
     const handleEnable = async () => {
-        const granted = await socketService.enablePushNotifications();
-        if (granted) {
-            setShow(false);
-            onClose?.();
-            // Show a test notification
-            pushNotificationService.show({
-                title: t('push_success_title'),
-                body: t('push_success_desc'),
-                tag: 'welcome'
+        try {
+            const granted = await socketService.enablePushNotifications();
+            if (granted) {
+                setShow(false);
+                onClose?.();
+                pushNotificationService.show({
+                    title: t('push_success_title'),
+                    body: t('push_success_desc'),
+                    tag: 'welcome'
+                });
+            } else {
+                // Permission denied or dismissed
+                addNotification({
+                    title: 'Notificaciones Bloqueadas',
+                    message: 'Por favor habilita los permisos en la configuración de tu navegador.',
+                    type: 'error'
+                });
+            }
+        } catch (error) {
+            console.error('Push permission error:', error);
+            addNotification({
+                title: 'Error',
+                message: 'No se pudo activar las notificaciones via Socket.',
+                type: 'error'
             });
         }
     };
