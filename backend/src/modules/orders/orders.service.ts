@@ -400,28 +400,38 @@ export class OrdersService {
         return savedOrder;
     }
 
-    async updatePaymentStatus(id: string, paymentStatus: string, transactionId?: string): Promise<Order> {
+    async updatePaymentStatus(orderId: string, status: 'PAID' | 'FAILED' | 'PENDING', transactionData?: string | any): Promise<Order> {
         // Use a transaction for consistent updates and event matching
         return await this.dataSource.transaction(async (manager) => {
             const order = await manager.findOne(Order, {
-                where: { id },
+                where: { id: orderId },
                 relations: ['items']
             });
 
-            if (!order) throw new NotFoundException(`Order ${id} not found`);
+            if (!order) throw new NotFoundException(`Order ${orderId} not found`);
 
             // IDEMPOTENCY GUARD: Exit if already paid or confirmed
             if (order.paymentStatus === 'PAID' || order.status === OrderStatus.CONFIRMED) {
-                this.logger.log(`Skipping payment update for order ${id}: Already PAID or CONFIRMED.`);
+                this.logger.log(`Skipping payment update for order ${orderId}: Already PAID or CONFIRMED.`);
                 return order;
             }
 
-            order.paymentStatus = paymentStatus;
-            if (transactionId) {
-                order.transactionId = transactionId;
+            order.paymentStatus = status;
+
+            if (transactionData) {
+                // If string, assume it's ID. If object, assume it's metadata/full response
+                if (typeof transactionData === 'string') {
+                    order.transactionId = transactionData;
+                } else {
+                    // Assuming transactionData has transactionId or similar
+                    const data = transactionData;
+                    order.transactionId = data.transactionId || data.transaction_id || order.transactionId;
+                    // Ideally store full response in a metadata field if Order entity has one
+                    order.metadata = { ...(order.metadata || {}), paymentResponse: data };
+                }
             }
 
-            if (paymentStatus === 'PAID') {
+            if (status === 'PAID') {
                 await this.logStatusChange(order, OrderStatus.CONFIRMED);
                 order.metadata = order.metadata || {};
 
@@ -457,22 +467,18 @@ export class OrdersService {
                                 paymentMetadata: {
                                     orderId: order.id,
                                     paidAt: new Date(),
-                                    transactionId
+                                    transactionId: order.transactionId
                                 }
                             })
                             .whereInIds(requestIds)
                             .execute();
                     }
                 }
-
-                // Emit event outside transaction to be safe? 
-                // Or better: Use Transactional Event Publisher if available.
-                // For now, we emit after save.
             }
 
             const savedOrder = await manager.save(Order, order);
 
-            if (paymentStatus === 'PAID') {
+            if (status === 'PAID') {
                 this.eventEmitter.emit('order.paid', new OrderPaidEvent(savedOrder));
             }
 

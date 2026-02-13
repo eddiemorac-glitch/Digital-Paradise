@@ -43,6 +43,7 @@ import 'winston-daily-rotate-file';
         TypeOrmModule.forRoot(typeOrmConfig),
         ConfigModule.forRoot({
             isGlobal: true,
+            envFilePath: '.env',
         }),
         EventEmitterModule.forRoot(),
         ServeStaticModule.forRoot({

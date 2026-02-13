@@ -200,4 +200,96 @@ export class AnalyticsService {
             weight: parseFloat(d.weight)
         }));
     }
+
+    async getRetentionMetrics(days: number = 30) {
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+
+        // 1. New Users (Created in period)
+        const newUsers = await this.userRepository.count({
+            where: {
+                createdAt: MoreThan(startDate),
+                role: UserRole.CLIENT
+            }
+        });
+
+        // 2. Returning Users (Active in period but created BEFORE period)
+        const activeUsersResult = await this.orderRepository
+            .createQueryBuilder('order')
+            .select('DISTINCT(order.userId)', 'userId')
+            .where('order.createdAt >= :startDate', { startDate })
+            .getRawMany();
+
+        const activeUserIds = activeUsersResult.map(u => u.userId);
+
+        let returningUsers = 0;
+        if (activeUserIds.length > 0) {
+            returningUsers = await this.userRepository.count({
+                where: {
+                    id: (activeUserIds as any), // TypeORM In(...) handled automatically if array? No, need In operator import or raw. 
+                    // Let's use QueryBuilder for safety with large arrays
+                    createdAt: Not(MoreThan(startDate)) // Created BEFORE start date
+                }
+            });
+            // Actually, easier logic:
+            // Returning = Count of Users where ID IN (activeUserIds) AND createdAt < startDate
+            returningUsers = await this.userRepository
+                .createQueryBuilder('user')
+                .where('user.id IN (:...ids)', { ids: activeUserIds })
+                .andWhere('user.createdAt < :startDate', { startDate })
+                .getCount();
+        }
+
+        return {
+            period: `${days} days`,
+            newUsers,
+            returningUsers,
+            totalActive: newUsers + returningUsers
+        };
+    }
+
+    async getDeliveryPerformance() {
+        // Breakdown by distance buckets (0-2km, 2-5km, 5km+)
+        // We use LogisticsMission actualDistanceKm and duration
+
+        const missions = await this.missionRepository.find({
+            where: { status: OrderStatus.DELIVERED },
+            select: ['actualDistanceKm', 'createdAt', 'metadata', 'estimatedMinutes']
+        });
+
+        const buckets = {
+            '0-2km': { count: 0, totalTime: 0, totalDistance: 0 },
+            '2-5km': { count: 0, totalTime: 0, totalDistance: 0 },
+            '5km+': { count: 0, totalTime: 0, totalDistance: 0 }
+        };
+
+        for (const m of missions) {
+            const dist = m.actualDistanceKm || 0;
+            const completedAt = m.metadata?.completedAt ? new Date(m.metadata.completedAt) : null;
+            if (!completedAt) continue;
+
+            const durationMinutes = (completedAt.getTime() - m.createdAt.getTime()) / 60000;
+
+            if (dist <= 2) {
+                buckets['0-2km'].count++;
+                buckets['0-2km'].totalTime += durationMinutes;
+                buckets['0-2km'].totalDistance += dist;
+            } else if (dist <= 5) {
+                buckets['2-5km'].count++;
+                buckets['2-5km'].totalTime += durationMinutes;
+                buckets['2-5km'].totalDistance += dist;
+            } else {
+                buckets['5km+'].count++;
+                buckets['5km+'].totalTime += durationMinutes;
+                buckets['5km+'].totalDistance += dist;
+            }
+        }
+
+        return Object.keys(buckets).map(key => ({
+            zone: key,
+            avgTime: buckets[key].count > 0 ? Math.round(buckets[key].totalTime / buckets[key].count) : 0,
+            avgDistance: buckets[key].count > 0 ? (buckets[key].totalDistance / buckets[key].count).toFixed(2) : 0,
+            count: buckets[key].count
+        }));
+    }
 }

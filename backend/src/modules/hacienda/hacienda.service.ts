@@ -212,17 +212,8 @@ export class HaciendaService {
         }
     }
 
-    private generateConsecutive(docType: string): string {
-        const terminal = '001';
-        const puntoVenta = '00001';
-        // SECUENCIAL: Ideally this should be a DB sequence. 
-        // For now, we use a nano-timestamp based approach to ensure uniqueness and increase over time.
-        const now = Date.now().toString(); // ms since epoch
-        const secuencial = now.slice(-10).padStart(10, '0');
-
-        this.logger.warn(`⚠️ Using timestamp-based secuencial (${secuencial}). Real production should use a database sequence!`);
-        return `${terminal}${puntoVenta}${docType}${secuencial}`;
-    }
+    // Removed unsafe generateConsecutive based on timestamp.
+    // All sequences must use getNextSequence() transactional method.
 
     private generateClave(order: Order, consecutive: string): string {
         const pais = '506';

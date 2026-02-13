@@ -86,23 +86,41 @@ export class LogisticsGateway implements OnGatewayConnection, OnGatewayDisconnec
     // --- Client -> Server (Live Tracking) ---
 
     @SubscribeMessage('update_driver_location')
-    handleDriverLocation(client: Socket, data: { missionId: string, lat: number, lng: number, orderId?: string }) {
-        const payload = {
-            missionId: data.missionId,
-            lat: data.lat,
-            lng: data.lng,
-            timestamp: new Date().toISOString()
-        };
+    handleDriverLocation(client: Socket, data: any | any[]) {
+        const updates = Array.isArray(data) ? data : [data];
+        const processed = [];
 
-        // Broadcast to mission room (Client)
-        this.server.to(`mission_${data.missionId}`).emit('driver_location_updated', payload);
+        for (const update of updates) {
+            if (!update.missionId || !update.lat || !update.lng) {
+                continue;
+            }
 
-        // Broadcast to buyer tracking room
-        if (data.orderId) {
-            this.server.to(`order_tracking_${data.orderId}`).emit('driver_location_updated', payload);
+            const payload = {
+                missionId: update.missionId,
+                lat: update.lat,
+                lng: update.lng,
+                timestamp: update.timestamp || new Date().toISOString() // Use client TS if available
+            };
+
+            // Broadcast to mission room (Client)
+            this.server.to(`mission_${update.missionId}`).emit('driver_location_updated', payload);
+
+            // Broadcast to buyer tracking room
+            if (update.orderId) {
+                this.server.to(`order_tracking_${update.orderId}`).emit('driver_location_updated', payload);
+            }
+
+            // Also broadcast to Admin/Logistics for global map visibility
+            this.server.to('admin_room').to('logistics_pool').emit('driver_location_updated', payload);
+
+            processed.push(update.timestamp);
         }
 
-        // Also broadcast to Admin/Logistics for global map visibility
-        this.server.to('admin_room').to('logistics_pool').emit('driver_location_updated', payload);
+        // ACKNOWLEDGEMENT
+        return {
+            status: 'ok',
+            received: processed.length,
+            timestamps: processed
+        };
     }
 }

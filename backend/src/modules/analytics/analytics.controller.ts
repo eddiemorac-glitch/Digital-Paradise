@@ -27,4 +27,16 @@ export class AnalyticsController {
     getHeatmap() {
         return this.analyticsService.getHeatmapData();
     }
+
+    @Get('retention')
+    @Roles(UserRole.ADMIN)
+    getRetention() {
+        return this.analyticsService.getRetentionMetrics();
+    }
+
+    @Get('delivery-performance')
+    @Roles(UserRole.ADMIN)
+    getDeliveryPerformance() {
+        return this.analyticsService.getDeliveryPerformance();
+    }
 }

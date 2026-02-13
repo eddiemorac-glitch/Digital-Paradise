@@ -23,6 +23,8 @@ if (process.env.DATABASE_URL) {
         database: dbUrl.pathname.slice(1), // Remove leading slash
         entities,
         subscribers,
+        migrations: [__dirname + '/../database/migrations/*{.ts,.js}'],
+        migrationsRun: process.env.NODE_ENV === 'production', // Auto-run in prod
         // CRITICAL: specific prod settings to prevent data loss
         synchronize: process.env.DB_SYNCHRONIZE === 'true',
         logging: process.env.DB_LOGGING === 'true' ? true : ['error', 'warn'],

@@ -4,6 +4,10 @@ import axios from 'axios';
 import { createHmac, timingSafeEqual } from 'crypto';
 import { OrdersService } from '../orders/orders.service';
 import { CircuitBreaker } from '../../shared/utils/circuit-breaker.util';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { WebhookLog } from './entities/webhook-log.entity';
 
 interface TilopayConfig {
     apiKey: string;
@@ -31,6 +35,8 @@ export class TilopayService {
 
     constructor(
         private configService: ConfigService,
+        @InjectRepository(WebhookLog)
+        private readonly webhookLogRepository: Repository<WebhookLog>,
         @Inject(forwardRef(() => OrdersService))
         private readonly ordersService: OrdersService
     ) {
