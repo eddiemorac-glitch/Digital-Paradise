@@ -11,12 +11,14 @@ interface TimeAwarenessState {
     displayName: string;
 }
 
-const getTimeOfDay = (hour: number): TimeOfDay => {
-    if (hour >= 6 && hour < 10) return 'SUNRISE';
-    if (hour >= 10 && hour < 16) return 'DAY';
-    if (hour >= 16 && hour < 19) return 'GOLDEN';
-    if (hour >= 19 && hour < 22) return 'NIGHT';
-    return 'STEALTH';
+const getTimeOfDay = (_hour: number): TimeOfDay => {
+    // FORCE SUNNY/DAY MODE AS REQUESTED BY USER
+    return 'DAY';
+    // if (hour >= 6 && hour < 10) return 'SUNRISE';
+    // if (hour >= 10 && hour < 16) return 'DAY';
+    // if (hour >= 16 && hour < 19) return 'GOLDEN';
+    // if (hour >= 19 && hour < 22) return 'NIGHT';
+    // return 'STEALTH';
 };
 
 const TIME_CONFIG: Record<TimeOfDay, { class: string; neon: number; hue: number; nameKey: string }> = {

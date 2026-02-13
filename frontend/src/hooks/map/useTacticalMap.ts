@@ -77,8 +77,10 @@ export const useTacticalMap = ({
         const fetchEvents = async () => {
             if (!mapRef.current) return;
             const map = mapRef.current;
-
-            // Ensure map has a size and projection ready
+            if (!map) {
+                if (!controller.signal.aborted) setIsLoading(false);
+                return;
+            }
             if (!map.getContainer().clientHeight || !map.getBounds() || !map.getBounds().isValid()) {
                 if (retries < maxRetries) {
                     retries++;
