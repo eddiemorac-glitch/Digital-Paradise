@@ -167,7 +167,7 @@ export class EventsService {
             const queryBuilder = this.eventRepository
                 .createQueryBuilder('event')
                 .where('event.isActive = true')
-                .andWhere('(event.startDate IS NULL OR event.startDate >= :now)', { now: new Date(Date.now() - 3600000) });
+                .andWhere('(event.startDate IS NULL OR event.startDate >= :now)', { now: new Date(Date.now() - 86400000) }); // Show events from last 24h
 
             if (!isGlobal) {
                 queryBuilder.andWhere(

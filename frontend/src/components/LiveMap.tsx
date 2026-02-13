@@ -158,7 +158,10 @@ const LiveMapComponent: React.FC<LiveMapProps> = ({
                 attributionControl={false}
                 className="h-full w-full relative z-[10]"
             >
-                <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png" />
+                <TileLayer
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_nolabels/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                />
 
                 <MapController
                     onMapReady={() => {
