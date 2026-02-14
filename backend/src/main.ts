@@ -51,8 +51,8 @@ async function bootstrap() {
     // Enable Helmet for Security Headers
     app.use(require('helmet')());
 
-    // Swagger - only available in development
-    if (process.env.NODE_ENV !== 'production') {
+    // Swagger - Enabled in Development OR if explicitly allowed in Production
+    if (process.env.NODE_ENV !== 'production' || process.env.SWAGGER_ENABLED === 'true') {
         const config = new DocumentBuilder()
             .setTitle('DIGITAL PARADISE API')
             .setDescription('Centro de Comando Caribe - Puerto Viejo Digital Ecosystem')

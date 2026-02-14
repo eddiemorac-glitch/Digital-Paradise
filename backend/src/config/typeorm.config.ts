@@ -27,6 +27,7 @@ if (process.env.DATABASE_URL) {
         migrationsRun: process.env.NODE_ENV === 'production', // Auto-run in prod
         // CRITICAL: specific prod settings to prevent data loss
         synchronize: process.env.DB_SYNCHRONIZE === 'true',
+        // Default to minimal logging in production to reduce noise
         logging: process.env.DB_LOGGING === 'true' ? true : ['error', 'warn'],
         ssl: {
             rejectUnauthorized: false, // Required for Render

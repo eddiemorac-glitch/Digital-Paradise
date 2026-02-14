@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, RefObject, useRef } from 'react';
+import { useNotificationStore } from '../../store/notificationStore';
 import L from 'leaflet';
 import {
     EventData,
@@ -129,7 +130,13 @@ export const useTacticalMap = ({
                 setDynamicEvents(fetchedEvents);
             } catch (err) {
                 if (!controller.signal.aborted) {
-                    // devLog("Tactical Orchestrator: Failed to fetch viewport events:", err);
+                    devLog("Tactical Orchestrator: Failed to fetch viewport events:", err);
+                    // Notify user discreetly
+                    useNotificationStore.getState().addNotification({
+                        title: 'Error de Sincronización',
+                        message: 'No se pudieron cargar los eventos del mapa. Reintentando...',
+                        type: 'warning'
+                    });
                 }
             } finally {
                 if (!controller.signal.aborted) {

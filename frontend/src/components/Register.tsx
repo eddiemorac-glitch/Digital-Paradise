@@ -1,16 +1,33 @@
 import { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
 import api from '../api/api';
 import { motion } from 'framer-motion';
 import { PrivacyModal } from './PrivacyModal';
 import { AvatarSelector } from './AvatarSelector';
 import { getAvatarById } from './AvatarIcons';
+import { useAuthStore } from '../store/authStore';
 
 export const Register = ({ onToggle }: { onToggle: () => void }) => {
+    const { setAuth } = useAuthStore();
+
+    // Core form state
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    // Privacy policy
     const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+    const [agreedToPrivacyPolicy, setAgreedToPrivacyPolicy] = useState(false);
+
+    // Avatar selection
+    const [isAvatarSelectorOpen, setIsAvatarSelectorOpen] = useState(false);
+    const [selectedAvatarId, setSelectedAvatarId] = useState('avatar-1');
+
+    // Role selection
     const [role, setRole] = useState<'client' | 'merchant' | 'delivery'>('client');
     const [merchantName, setMerchantName] = useState('');
-    const [category, setCategory] = useState('RESTAURANT'); // Default
+    const [category, setCategory] = useState('RESTAURANT');
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
     const [vehicleType, setVehicleType] = useState('MOTORCYCLE');
@@ -89,8 +106,8 @@ export const Register = ({ onToggle }: { onToggle: () => void }) => {
                         type="button"
                         onClick={() => setRole(r)}
                         className={`flex-1 py-2 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${role === r
-                                ? 'bg-primary text-background shadow-lg'
-                                : 'text-white/40 hover:text-white hover:bg-white/5'
+                            ? 'bg-primary text-background shadow-lg'
+                            : 'text-white/40 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         {r === 'client' ? 'Usuario' : r === 'merchant' ? 'Comercio' : 'Repartidor'}

@@ -28,6 +28,18 @@ class SocketService {
 
             devLog('🔗 WebSocket Connecting to:', SOCKET_URL);
 
+            // Explicitly handle Token (null if guest)
+            const authPayload = token ? { token } : { isGuest: true };
+
+            this.socket = io(SOCKET_URL, {
+                auth: authPayload,
+                transports: ['websocket'], // Force WS to avoid Sticky Session issues on Render
+                reconnection: true,
+                reconnectionAttempts: Infinity,
+                reconnectionDelay: 1000,
+                timeout: 10000
+            });
+
             this.setupLifecyleListeners();
             this.setupPushNotificationListeners();
         }
@@ -40,22 +52,38 @@ class SocketService {
         this.socket.on('connect', () => {
             devLog('✅ WebSocket Connected (ID:', this.socket?.id, ')');
 
+            // Notify user of connection restoration if they were offline or had issues
+            // But don't spam on initial load
+
             // Auto-restore rooms on reconnection
             this.restoreRooms();
         });
 
         this.socket.on('connect_error', (err) => {
             devError('❌ WebSocket Connection Error:', err.message);
+
             if (err.message.includes('Unauthorized') || err.message.includes('unauthorized')) {
                 devWarn('⚠️ Authentication failure in Socket. Force cleaning...');
-                this.disconnect();
-                // Emit custom event for UI to handle logout if needed
-                window.dispatchEvent(new CustomEvent('socket_auth_error'));
+                // Don't disconnect, just stay designated as guest if possible?
+                // Actually, if backend rejects, we must handle it.
+                // For now, logout only if it WAS authenticated
+
+                if (localStorage.getItem('token')) {
+                    this.disconnect();
+                    window.dispatchEvent(new CustomEvent('socket_auth_error'));
+                }
+            } else {
+                // General connection error (network, server down)
+                // Maybe show a toast if it persists?
             }
         });
 
         this.socket.on('disconnect', (reason) => {
             devLog('🔌 WebSocket Disconnected:', reason);
+            if (reason === 'io server disconnect') {
+                // the disconnection was initiated by the server, you need to reconnect manually
+                this.socket?.connect();
+            }
         });
 
         // Mobile Network Resilience

@@ -5,6 +5,7 @@ import { typeOrmConfig } from './config/typeorm.config';
 import { ScheduleModule } from '@nestjs/schedule'; // Added for Tasks
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { RootController } from './shared/root.controller';
 import { UserLocationSubscriber } from './modules/users/subscribers/user-location.subscriber';
 import { MerchantLocationSubscriber } from './modules/merchants/subscribers/merchant-location.subscriber';
 import { AuthModule } from './modules/auth/auth.module';
@@ -121,5 +122,6 @@ import 'winston-daily-rotate-file';
             useClass: ThrottlerGuard,
         },
     ],
+    controllers: [RootController],
 })
 export class AppModule { }
