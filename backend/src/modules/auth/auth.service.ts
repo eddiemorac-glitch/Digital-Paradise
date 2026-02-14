@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, ConflictException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, Logger, Inject, forwardRef } from '@nestjs/common';
 import { TokenService } from './token.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -25,6 +25,7 @@ export class AuthService {
         private readonly refreshTokenRepository: Repository<RefreshToken>,
         private readonly tokenService: TokenService,
         private readonly emailsService: EmailsService,
+        @Inject(forwardRef(() => MerchantsService))
         private readonly merchantsService: MerchantsService,
         private readonly dataSource: DataSource,
     ) { }

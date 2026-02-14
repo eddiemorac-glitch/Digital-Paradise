@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MerchantsService } from './merchants.service';
 import { MerchantsController } from './merchants.controller';
@@ -13,7 +13,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 @Module({
     imports: [
         TypeOrmModule.forFeature([Merchant, Review, MerchantActionLog]),
-        NotificationsModule
+        forwardRef(() => NotificationsModule)
     ],
     providers: [
         MerchantsService,

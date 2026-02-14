@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -31,7 +31,7 @@ import { WebAuthnService } from './webauthn.service';
             }),
         }),
         EmailsModule,
-        MerchantsModule,
+        forwardRef(() => MerchantsModule),
     ],
     providers: [AuthService, JwtStrategy, TokenService, WebAuthnService],
     controllers: [AuthController],

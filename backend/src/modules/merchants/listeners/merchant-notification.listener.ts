@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { MerchantStatusChangedEvent } from '../events/merchant-status-changed.event';
 import { NotificationsService } from '../../notifications/notifications.service';
@@ -7,7 +7,10 @@ import { MerchantStatus } from '../../../shared/enums/merchant.enum';
 
 @Injectable()
 export class MerchantNotificationListener {
-    constructor(private readonly notificationsService: NotificationsService) { }
+    constructor(
+        @Inject(forwardRef(() => NotificationsService))
+        private readonly notificationsService: NotificationsService
+    ) { }
 
     @OnEvent('merchant.status.changed')
     async handleMerchantStatusChanged(event: MerchantStatusChangedEvent) {
